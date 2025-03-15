@@ -2,7 +2,7 @@
   <v-app>
     <VHeader />
     <v-main>
-      <RouterView />
+      <router-view />
     </v-main>
     <VFooter />
   </v-app>
@@ -13,9 +13,15 @@ import VHeader from '@/components/Header.vue'
 import VFooter from '../components/Footer.vue'
 
 export default {
+  setup() {},
   components: {
     VHeader,
     VFooter,
+  },
+  data() {
+    return {
+      layout: 'Default',
+    }
   },
 }
 </script>

@@ -21,125 +21,9 @@
 
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a
-              class="nav-link active s"
-              aria-current="page"
-              href="home.html"
-              onMouseOver="this.style.color='red'"
-              onMouseOut="this.style.color='white'"
-              >Home</a
-            >
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="movies.html"
-              onMouseOver="this.style.color='red'"
-              onMouseOut="this.style.color='white'"
-              >Movies</a
-            >
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="web-series.html"
-              onMouseOver="this.style.color='red'"
-              onMouseOut="this.style.color='white'"
-              >Web Series</a
-            >
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="kids.html"
-              onMouseOver="this.style.color='red'"
-              onMouseOut="this.style.color='white'"
-              >Kids</a
-            >
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="tv.html"
-              onMouseOver="this.style.color='red'"
-              onMouseOut="this.style.color='white'"
-              >TV</a
-            >
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="premium.html"
-              onMouseOver="this.style.color='red'"
-              onMouseOut="this.style.color='white'"
-              >Premium</a
-            >
-          </li>
-
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="contactus.html"
-              onMouseOver="this.style.color='red'"
-              onMouseOut="this.style.color='white'"
-              >Contact Us</a
-            >
-          </li>
-          <li>
-            <!-- Genre dropdown starts-->
-            <div>
-              <div
-                class="dropdown"
-                style="
-                  position: relative;
-                  display: inline-block;
-                  padding-top: 5px;
-                  padding-left: 15px;
-                "
-              >
-                <button
-                  class="btn btn-outline-danger dropdown-toggle"
-                  type="button"
-                  id="dropdownMenuButton"
-                  style="font-size: 20px"
-                >
-                  Genres
-                </button>
-                <div class="dropdown-content" style="color: white">
-                  <a href="popular.html">Popular</a>
-                  <a href="crime.html">Crime</a>
-                  <a href="suspense.html">Suspense & Thriller</a>
-                  <a href="action.html">Action</a>
-                  <a href="fantasy.html">Sci-Fi & Fantasy</a>
-                  <a href="documentary.html">Documentary</a>
-                  <a href="horror.html">Horror</a>
-                  <a href="drama.html">Drama</a>
-                  <a href="war.html">War & Politics</a>
-                  <a href="comedy.html">Comedy</a>
-                  <a href="romance.html">Romance</a>
-                  <a href="anime.html">Anime</a>
-                </div>
-              </div>
-            </div>
-            <!-- Genre dropdown ends-->
-          </li>
-          <div
-            style="position: relative; display: inline-block; padding-top: 5px; padding-left: 15px"
-          >
-            <li>
-              <button
-                type="button"
-                class="btn btn-light"
-                onclick="logout()"
-                onMouseOver="this.style.color='red'"
-                onMouseOut="this.style.color='white'"
-              >
-                Logout
-              </button>
-            </li>
-          </div>
+          <v-nav />
         </ul>
+
         <form id="searchForm" class="d-flex">
           <input
             class="form-control me-2"
@@ -154,3 +38,13 @@
     </div>
   </nav>
 </template>
+
+<script>
+import VNav from './Nav.vue'
+
+export default {
+  components: {
+    VNav,
+  },
+}
+</script>

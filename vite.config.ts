@@ -7,12 +7,14 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    port: 5173,
+    host: 'localhost',
+  },
   plugins: [vue(), vueDevTools()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  // change the public directory path
-  publicDir: path.resolve(__dirname, '../public'),
 })
