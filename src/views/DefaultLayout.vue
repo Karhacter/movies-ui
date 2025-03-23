@@ -1,27 +1,26 @@
 <template>
-  <v-app>
+  <div>
+    <!-- Header -->
     <VHeader />
-    <v-main>
+
+    <!-- Main Content -->
+    <main>
       <router-view />
-    </v-main>
+    </main>
+
+    <!-- Footer -->
     <VFooter />
-  </v-app>
+  </div>
 </template>
 
 <script>
-import VHeader from '@/components/Header.vue'
-import VFooter from '../components/Footer.vue'
+import VHeader from '@/views/Header.vue'
+import VFooter from '@/views/Footer.vue'
 
 export default {
-  setup() {},
   components: {
     VHeader,
     VFooter,
-  },
-  data() {
-    return {
-      layout: 'Default',
-    }
   },
 }
 </script>
