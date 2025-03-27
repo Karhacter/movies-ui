@@ -3,7 +3,7 @@
     <div class="movie-image-container">
       <img :src="movie.image" class="card-img-top" alt="Movie Poster" />
       <div class="play-button-overlay">
-        <button class="play-button">
+        <button class="play-button" @click="navigateToMovieDetail(movie.id)">
           <i class="fas fa-play"></i>
         </button>
       </div>
@@ -18,6 +18,8 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+
 interface Movie {
   id: number
   title: string
@@ -28,6 +30,13 @@ interface Movie {
 defineProps<{
   movie: Movie
 }>()
+
+const router = useRouter()
+
+const navigateToMovieDetail = (id: number) => {
+  router.push(`/movies/${id}`)
+}
+
 </script>
 
 <style scoped>
