@@ -1,479 +1,262 @@
 <template>
-  <div class="movie-detail">
-    <!-- Loading State -->
-    <div v-if="loading" class="loading-state">
-      <div class="spinner"></div>
-      <p>Đang tải...</p>
+  <div class="container">
+    <!-- Banner -->
+    <div class="banner mb-3">
+      <img :src="getImage(movie.image)" class="img-fluid w-100" alt="Võ Luyện Đỉnh Phong" />
     </div>
 
-    <!-- Error State -->
-    <div v-else-if="error" class="error-state">
-      <p>{{ error }}</p>
-      <button @click="retryLoad" class="btn-retry">Thử lại</button>
-    </div>
+    <!-- Movie Details -->
+    <div class="card text-white mt-3 p-3">
+      <div class="row">
+        <div class="col-md-3">
+          <img :src="getImage(movie.image)" class="img-fluid w-100" alt="Movie Poster" />
 
-    <!-- Content -->
-    <template v-else>
-      <!-- Hero Section -->
-      <div
-        class="hero-section"
-        :style="movie?.coverImage ? { backgroundImage: `url(${movie.coverImage})` } : {}"
-      >
-        <div class="overlay">
-          <div class="container">
-            <div class="content-wrapper">
-              <div class="poster" v-if="movie">
-                <img :src="movie.image" :alt="movie.title" />
-              </div>
-              <div class="info" v-if="movie">
-                <h1>{{ movie.title }}</h1>
-                <div class="meta">
-                  <span class="rating">
-                    <i class="fas fa-star"></i>
-                    {{ movie.rating }}
-                  </span>
-                  <span class="year">{{ movie.year }}</span>
-                  <span class="duration">{{ movie.duration }}</span>
-                </div>
-                <div class="genres">
-                  <span v-for="genre in movie.genres" :key="genre" class="genre-tag">
-                    {{ genre }}
-                  </span>
-                </div>
-                <div class="actions">
-                  <button class="btn-watch"><i class="fas fa-play"></i> Xem Ngay</button>
-                  <button class="btn-action">
-                    <i class="fas fa-heart"></i>
-                  </button>
-                  <button class="btn-action">
-                    <i class="fas fa-plus"></i>
-                  </button>
-                  <button class="btn-action">
-                    <i class="fas fa-share"></i>
-                  </button>
-                </div>
-              </div>
+          <a class="btn btn-primary mt-3" href="#" role="button">
+            <img src="../../assets/img/play-button.jpg" alt="" style="height: 40px; width: 40px" />
+          </a>
+          <a class="btn btn-success mt-3 ms-2" href="#" role="button">
+            <img
+              src="../../assets/img/save-button.jpg"
+              alt=""
+              class="p-1"
+              style="height: 40px; width: 40px"
+            />
+          </a>
+        </div>
+        <div class="col-md-9">
+          <div class="row">
+            <h3 class="col">{{ movie.title }}</h3>
+
+            <div class="col-md-3 d-flex align-items-center justify-content-end">
+              <button class="btn btn-warning" @click="showRatingModal = true">Đánh giá</button>
             </div>
           </div>
+          <p>
+            <span class="badge bg-primary">{{ movie.category.name }}</span>
+          </p>
+          <p><strong>Trạng thái:</strong> {{ movie.status || 'Đang tiến hành' }}</p>
+          <p><strong>Điểm:</strong> {{ movie.rating }} / 10</p>
+          <p><strong>Phát hành:</strong> {{ movie.year || 2024 }}</p>
+          <p><strong>Thời lượng:</strong> {{ movie.episodes || '?? Tập' }}</p>
+          <strong>Mô tả:</strong>
+          <p class="movie-description">
+            {{ movie.description || 'Không có mô tả.' }}
+          </p>
         </div>
       </div>
+    </div>
 
-      <!-- Content Section -->
-      <div class="container content-section" v-if="movie">
-        <div class="tabs">
-          <button
-            v-for="tab in tabs"
-            :key="tab"
-            :class="['tab-btn', { active: currentTab === tab }]"
-            @click="currentTab = tab"
+    <!-- Rating Modal -->
+    <div v-if="showRatingModal" class="rating-modal">
+      <div class="modal-content p-3">
+        <h5>Đánh giá phim</h5>
+        <div class="stars">
+          <span
+            v-for="star in 10"
+            :key="star"
+            class="star"
+            :class="{ selected: star <= selectedRating }"
+            @click="setRating(star)"
           >
-            {{ tab }}
-          </button>
+            ★
+          </span>
         </div>
-
-        <div class="tab-content" v-if="currentTab === 'Tập phim'">
-          <div class="episodes-grid">
-            <button
-              v-for="ep in episodes"
-              :key="ep.number"
-              class="episode-btn"
-              :class="{ active: ep.number === currentEpisode }"
-            >
-              Tập {{ ep.number }}
-            </button>
-          </div>
+        <div class="mt-2">
+          <button class="btn btn-primary me-2" @click="submitRating">Xác nhận</button>
+          <button class="btn btn-secondary" @click="showRatingModal = false">Hủy</button>
         </div>
+      </div>
+    </div>
 
-        <div class="tab-content" v-else-if="currentTab === 'Thông tin'">
-          <div class="description">
-            <h3>Nội dung phim</h3>
-            <p>{{ movie.description }}</p>
-          </div>
-          <div class="details">
-            <div class="detail-item">
-              <span class="label">Đạo diễn:</span>
-              <span>{{ movie.director }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">Diễn viên:</span>
-              <span>{{ movie.cast.join(', ') }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">Thể loại:</span>
-              <span>{{ movie.genres.join(', ') }}</span>
-            </div>
+    <!-- season and episode list  -->
+    <MovieEpisode :episodes="episodes" />
+
+    <!-- Comments Section -->
+    <div class="card text-dark mt-4 p-3">
+      <h3>Bình luận</h3>
+      <div v-for="(comment, index) in comments" :key="index" class="mb-3 border p-2">
+        <div class="d-flex align-items-start">
+          <!-- Avatar Image -->
+          <img
+            :src="comment.avatar || 'https://via.placeholder.com/50'"
+            alt="Avatar"
+            class="comment-avatar me-2"
+          />
+
+          <!-- Comment Content -->
+          <div class="comment-content">
+            <strong>{{ comment.user }}</strong>
+            <p>{{ comment.text }}</p>
           </div>
         </div>
       </div>
-    </template>
+    </div>
+
+    <!-- Recommended Movies Section -->
+    <div class="card text-dark mt-4 p-3">
+      <h3>Đề Xuất</h3>
+      <div class="d-flex overflow-auto">
+        <!-- <div class="col-md-3 col-sm-3 col-xs-6 grid-item mb-4 ps-0" v-for="movie in movies" :key="movie.id"> -->
+        <!-- <MovieCard :movie="movie" /> -->
+        <!-- </div> -->
+      </div>
+    </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+<script>
 import { $http } from '@/plugins/http-wrapper'
-
-interface Movie {
-  id: number
-  title: string
-  image: string
-  coverImage: string
-  rating: number
-  year: string
-  duration: string
-  genres: string[]
-  description: string
-  director: string
-  cast: string[]
-  slug: string
-}
-
-interface Episode {
-  number: number
-  title: string
-  url: string
-}
-
-const route = useRoute()
-const router = useRouter()
-const movie = ref<Movie | null>(null)
-const episodes = ref<Episode[]>([])
-const currentEpisode = ref(1)
-const currentTab = ref('Tập phim')
-const tabs = ['Tập phim', 'Gallery', 'Diễn viên', 'Đề xuất']
-const loading = ref(true)
-const error = ref<string | null>(null)
-
-// Extract the ID from the slug (assuming slug format is "title-123")
-const getIdFromSlug = (slug: string) => {
-  const matches = slug.match(/-(\d+)$/)
-  return matches ? matches[1] : slug
-}
-
-const fetchMovieDetail = async () => {
-  try {
-    loading.value = true
-    error.value = null
-    const movieId = getIdFromSlug(route.params.slug as string)
-    const response = await $http.get<Movie>(`/movies/detail/${movieId}`)
-    movie.value = response
-
-    // Update URL with proper slug if it's different
-    if (movie.value && route.params.slug !== movie.value.slug) {
-      router.replace({
-        name: 'movie-detail',
-        params: { slug: movie.value.slug },
-      })
+import MovieEpisode from '@/components/movies/MovieEpisode.vue'
+export default {
+  components: {
+    MovieEpisode,
+  },
+  data() {
+    return {
+      showRatingModal: false,
+      selectedRating: 0,
+      movie: {},
+      episodes: [],
+      comments: [
+        { user: 'Nguyễn Văn A', text: 'Bộ này hay quá!' },
+        { user: 'Trần Thị B', text: 'Mình thích nhân vật chính.' },
+      ],
     }
-  } catch (err) {
-    error.value = 'Không thể tải thông tin phim. Vui lòng thử lại sau.'
-    console.error('Error fetching movie details:', err)
-  } finally {
-    loading.value = false
-  }
-}
+  },
+  created() {
+    this.fetchMovie()
+    this.fetchEpisodes()
+  },
+  methods: {
+    getImage(imageName) {
+      return new URL(`../../assets/img/movies/${imageName}`, import.meta.url).href
+    },
+    setRating(star) {
+      this.selectedRating = star
+    },
+    submitRating() {
+      alert(`Bạn đã đánh giá ${this.selectedRating} sao!`)
+      this.showRatingModal = false
+    },
 
-const fetchEpisodes = async () => {
-  try {
-    const movieId = getIdFromSlug(route.params.slug as string)
-    const response = await $http.get<Episode[]>(`/movies/${movieId}/episodes`)
-    episodes.value = response
-  } catch (err) {
-    console.error('Error fetching episodes:', err)
-  }
-}
+    async fetchMovie() {
+      try {
+        let movieId = this.$route.params.id
+        const res = await $http.get(`/movie/detail/${movieId}`)
+        if (res) {
+          this.movie = res
+        }
+      } catch (error) {
+        console.error('Error fetching movie details:', error.message)
+      }
+    },
 
-const retryLoad = () => {
-  fetchMovieDetail()
-  fetchEpisodes()
+    async fetchEpisodes() {
+      try {
+        let movieId = this.$route.params.id
+        const episodesRes = await $http.get(`/episodes/movie/${movieId}`)
+        if (episodesRes) {
+          this.episodes = episodesRes
+        }
+      } catch (error) {
+        console.error('Error fetching episodes:', error.message)
+      }
+    },
+  },
 }
-
-onMounted(() => {
-  fetchMovieDetail()
-  fetchEpisodes()
-})
 </script>
 
-<style scoped>
-.movie-detail {
-  background-color: #1a1a1a;
-  min-height: 100vh;
-  color: white;
-  padding-top: 80px; /* Add space for header */
+<style>
+body {
+  margin-top: 120px;
 }
 
-.container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.hero-section {
+.banner {
   position: relative;
-  height: 70vh;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  width: 100%;
-  margin-top: -80px; /* Offset the padding-top */
+  width: 100vw; /* Full width */
+  height: 100vh; /* Full height */
+  overflow: hidden;
 }
 
-.overlay {
+.banner::before {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.5) 0%,
-    rgba(0, 0, 0, 0.8) 50%,
-    rgba(0, 0, 0, 0.95) 100%
-  );
-  display: flex;
-  align-items: flex-end;
-}
-
-.content-wrapper {
-  display: flex;
-  gap: 2rem;
-  padding: 2rem 0;
-  margin-bottom: 2rem;
-  width: 100%;
-}
-
-.poster {
-  flex-shrink: 0;
-  width: 300px;
-  height: 450px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-}
-
-.poster img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  background: rgba(0, 0, 0, 0.5); /* Black overlay with 50% opacity */
+  z-index: 1;
 }
 
-.info {
-  flex: 1;
-  padding-top: 2rem;
+.banner-img {
+  width: 50%;
+  height: 50%;
+  object-fit: cover; /* Ensures the image covers the banner */
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
-.info h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+/* Rating Modal */
+.rating-modal {
+  display: block;
+  position: fixed;
+  z-index: 9999;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
-.meta {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+.stars {
+  font-size: 2rem;
 }
 
-.rating {
-  color: #ffc107;
-}
-
-.genres {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.genre-tag {
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 0.3rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-}
-
-.actions {
-  display: flex;
-  gap: 1rem;
-}
-
-.btn-watch {
-  background-color: #e50914;
-  color: white;
-  border: none;
-  padding: 0.8rem 2rem;
-  border-radius: 8px;
-  font-size: 1.1rem;
+.star {
   cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn-watch:hover {
-  background-color: #f6121d;
-}
-
-.btn-action {
-  background-color: rgba(255, 255, 255, 0.1);
-  border: none;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn-action:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.content-section {
-  padding: 2rem 0;
-}
-
-.tabs {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 1rem;
-}
-
-.tab-btn {
-  background: none;
-  border: none;
-  color: #999;
-  font-size: 1.1rem;
-  cursor: pointer;
-  padding: 0.5rem 1rem;
+  color: gray;
   transition: color 0.3s;
 }
 
-.tab-btn.active {
-  color: white;
-  position: relative;
+.star:hover,
+.star.selected {
+  color: darkorange;
 }
 
-.tab-btn.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1rem;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-color: #e50914;
-}
-
-.episodes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.episode-btn {
+.movie-description {
+  max-height: 150px;
+  /* Set a fixed height */
+  overflow-y: auto;
+  /* Enable vertical scrolling */
+  padding: 10px;
   background-color: rgba(255, 255, 255, 0.1);
-  border: none;
-  padding: 1rem;
-  border-radius: 8px;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  /* Slight background for readability */
+  border-radius: 5px;
+  /* Rounded corners */
+  line-height: 1.5;
 }
 
-.episode-btn.active {
-  background-color: #e50914;
-}
-
-.episode-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.description {
-  margin-bottom: 2rem;
-}
-
-.description h3 {
-  margin-bottom: 1rem;
-  color: #e50914;
-}
-
-.details {
-  display: grid;
-  gap: 1rem;
-}
-
-.detail-item {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 1rem;
-}
-
-.detail-item .label {
-  color: #999;
-}
-
-@media (max-width: 768px) {
-  .content-wrapper {
-    flex-direction: column;
-  }
-
-  .poster {
-    width: 200px;
-    height: 300px;
-    margin: 0 auto;
-  }
-
-  .info {
-    text-align: center;
-  }
-
-  .genres,
-  .actions {
-    justify-content: center;
-  }
-}
-
-.loading-state,
-.error-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 80px);
-  text-align: center;
-  padding: 2rem;
-}
-
-.spinner {
+.comment-avatar {
   width: 50px;
+  /* Set avatar size */
   height: 50px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  border-top-color: #e50914;
-  animation: spin 1s ease-in-out infinite;
-  margin-bottom: 1rem;
+  /* Make it round */
+  object-fit: cover;
+  /* Ensure it covers the area */
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.btn-retry {
-  background-color: #e50914;
-  color: white;
-  border: none;
-  padding: 0.8rem 2rem;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  margin-top: 1rem;
-}
-
-.btn-retry:hover {
-  background-color: #f6121d;
+.comment-content {
+  flex: 1;
+  /* Take remaining space */
+  background: rgba(0, 0, 0, 0.05);
+  /* Light background */
+  padding: 10px;
+  border-radius: 5px;
 }
 </style>
