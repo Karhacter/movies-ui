@@ -54,13 +54,20 @@
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  <img :src="userAvatar" alt="User Avatar" class="user-avatar" />
+                  <img
+                    v-if="userAvatar"
+                    :src="userAvatar"
+                    alt="User Avatar"
+                    class="user-avatar"
+                    @error="userAvatar = null"
+                  />
+                  <i v-else class="fas fa-user-circle default-avatar"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                   <li><a class="dropdown-item" href="#">Profile</a></li>
                   <li><a class="dropdown-item" href="#">Settings</a></li>
                   <li><hr class="dropdown-divider" /></li>
-                  <li><a class="dropdown-item" href="#" @click="handleLogout">Logout</a></li>
+                  <li><a class="dropdown-item" href="/login" @click="handleLogout">Logout</a></li>
                 </ul>
               </div>
             </div>
@@ -79,49 +86,97 @@
 
 <script>
 import VNav from '../components/Nav.vue'
+import { $http } from '../plugins/http-wrapper'
 
 export default {
   components: {
     VNav,
   },
+
   data() {
     return {
       isScrolled: false,
+      hasNotifications: false,
+      userEmail: null,
       isLoggedIn: false,
-      hasNotifications: true, // You can control this based on actual notifications
-      userAvatar:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHX1VEM_PfRO6U5MLrnH5KrdwFot2jgrx7kQ&s2',
+      userAvatar: null,
     }
   },
+
   mounted() {
+    this.checkAuthState()
     window.addEventListener('scroll', this.handleScroll)
-    // Check if user is logged in
-    this.checkLoginStatus()
+    // Check auth state every 5 minutes
+    this.authInterval = setInterval(this.checkAuthState, 300000)
   },
+
   beforeUnmount() {
     window.removeEventListener('scroll', this.handleScroll)
+    clearInterval(this.authInterval)
   },
+
   methods: {
     handleScroll() {
       this.isScrolled = window.scrollY > 50
     },
-    checkLoginStatus() {
-      // Check if token exists in localStorage
-      const token = localStorage.getItem('token')
+    async checkAuthState() {
+      const token =
+        localStorage.getItem('token') ||
+        document.cookie
+          .split('; ')
+          .find((row) => row.startsWith('token='))
+          ?.split('=')[1]
+
+      const res = await $http.get('/auth/check')
+      if (!res) {
+        thiss.isLoggedIn = false
+      }
       this.isLoggedIn = !!token
+      if (this.isLoggedIn && !this.userAvatar) {
+        this.userAvatar = '/src/assets/avatar.png'
+      }
     },
-    handleLogout() {
-      localStorage.removeItem('token')
-      this.isLoggedIn = false
-      // Redirect to login page
-      this.$router.push('/login')
+    async handleLogout(e) {
+      e.preventDefault()
+      try {
+        // Get token from localStorage or cookie
+        const token =
+          localStorage.getItem('token') ||
+          document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1]
+
+        // Make logout request with explicit token
+        const response = await $http.post(
+          '/auth/logout',
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+
+        if (response.status === 200) {
+          // Clear client-side token storage
+          localStorage.removeItem('token')
+          document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+          this.isLoggedIn = false
+          this.userEmail = null
+          // Full reload to clear all state
+        }
+        window.location.href = '/login'
+      } catch (error) {
+        console.error('Logout failed:', error)
+        alert('Logout failed. Please try again.')
+      }
     },
   },
 }
 </script>
 
 <style>
-/* Custom styles for header if needed */
 #header-nav .navbar-nav .nav-item .nav-link:hover {
   color: red;
   text-decoration: none;
@@ -131,6 +186,7 @@ export default {
   text-shadow: 0 0 10px red;
 }
 
+/* Navbar fixed lauyout  */
 .navbar {
   position: fixed;
   top: 0;

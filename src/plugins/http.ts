@@ -1,5 +1,5 @@
 import type { App } from 'vue'
-import { $http } from '@/utils/http-wrapper'
+import { $http } from '@/plugins/http-wrapper'
 
 export default {
   install: (app: App) => {

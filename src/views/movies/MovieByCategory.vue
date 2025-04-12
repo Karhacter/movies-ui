@@ -77,6 +77,8 @@ export default defineComponent({
       if (this.loading) return
       try {
         this.loading = true
+        console.log('Route params:', this.route.params)
+        console.log('Current page:', this.currentPage)
 
         if (this.pageCache.has(this.currentPage)) {
           this.movies = this.pageCache.get(this.currentPage)
@@ -84,20 +86,23 @@ export default defineComponent({
           return
         }
 
-        const params = {
-          page: Number(this.currentPage),
-          size: Number(this.pageSize),
-          sortBy: this.sortBy,
-          sortOrder: this.sortOrder,
-          search: this.searchQuery,
-        }
-
-        const response = await $http.get('/movies/index', params)
+        const response = await $http.get(`/movies/category/link/${this.route.params.link}`, {
+          params: new URLSearchParams({
+            page: this.currentPage,
+            size: this.pageSize,
+            sortBy: this.sortBy,
+            sortOrder: this.sortOrder,
+            search: this.searchQuery,
+          }),
+        })
 
         if (response && response.content) {
+          console.log('API Response:', response)
           this.movies = response.content
           this.totalPages = response.totalPages
           this.pageCache.set(this.currentPage, response.content)
+        } else {
+          console.warn('Empty or invalid API response')
         }
       } catch (error) {
         console.error('Failed to fetch movies:', error)

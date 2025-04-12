@@ -1,15 +1,19 @@
 <template>
-  <div class="container">
-    <!-- Banner -->
-    <div class="banner mb-3">
-      <img :src="getImage(movie.image)" class="img-fluid w-100" alt="Võ Luyện Đỉnh Phong" />
-    </div>
+  <!-- Banner -->
+  <div class="banner" :style="{ backgroundImage: `url(${getImage(movie.image)})` }">
+    <div class="banner-overlay"></div>
+    <img :src="getImage(movie.image)" class="img-fluid" alt="Võ Luyện Đỉnh Phong" />
+  </div>
 
-    <!-- Movie Details -->
-    <div class="card text-white mt-3 p-3">
+  <div class="container">
+    <div class="card text-white p-3">
       <div class="row">
         <div class="col-md-3">
-          <img :src="getImage(movie.image)" class="img-fluid w-100" alt="Movie Poster" />
+          <img
+            :src="getImage(movie.image)"
+            class="img-fluid w-100 movie-image"
+            alt="Movie Poster"
+          />
 
           <a class="btn btn-primary mt-3" href="#" role="button">
             <img src="../../assets/img/play-button.jpg" alt="" style="height: 40px; width: 40px" />
@@ -37,7 +41,8 @@
           <p><strong>Trạng thái:</strong> {{ movie.status || 'Đang tiến hành' }}</p>
           <p><strong>Điểm:</strong> {{ movie.rating }} / 10</p>
           <p><strong>Phát hành:</strong> {{ movie.year || 2024 }}</p>
-          <p><strong>Thời lượng:</strong> {{ movie.episodes || '?? Tập' }}</p>
+          <p><strong>Thời lượng:</strong> {{ totalEpisodes }} tập</p>
+
           <strong>Mô tả:</strong>
           <p class="movie-description">
             {{ movie.description || 'Không có mô tả.' }}
@@ -102,6 +107,7 @@
       </div>
     </div>
   </div>
+  <!-- Movie Details -->
 </template>
 
 <script>
@@ -113,6 +119,7 @@ export default {
   },
   data() {
     return {
+      totalEpisodes: 0,
       showRatingModal: false,
       selectedRating: 0,
       movie: {},
@@ -131,6 +138,7 @@ export default {
     getImage(imageName) {
       return new URL(`../../assets/img/movies/${imageName}`, import.meta.url).href
     },
+
     setRating(star) {
       this.selectedRating = star
     },
@@ -157,7 +165,9 @@ export default {
         const episodesRes = await $http.get(`/episodes/movie/${movieId}`)
         if (episodesRes) {
           this.episodes = episodesRes
+          this.totalEpisodes = new Set(this.episodes.map((ep) => ep.episodeNumber)).size
         }
+        console.log('Total Episodes:', this.totalEpisodes)
       } catch (error) {
         console.error('Error fetching episodes:', error.message)
       }
@@ -168,36 +178,8 @@ export default {
 
 <style>
 body {
-  margin-top: 120px;
+  margin-top: 90px;
 }
-
-.banner {
-  position: relative;
-  width: 100vw; /* Full width */
-  height: 100vh; /* Full height */
-  overflow: hidden;
-}
-
-.banner::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* Black overlay with 50% opacity */
-  z-index: 1;
-}
-
-.banner-img {
-  width: 50%;
-  height: 50%;
-  object-fit: cover; /* Ensures the image covers the banner */
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
 /* Rating Modal */
 .rating-modal {
   display: block;
@@ -258,5 +240,49 @@ body {
   /* Light background */
   padding: 10px;
   border-radius: 5px;
+}
+
+.movie-image {
+  height: 70%;
+}
+/* Banner css */
+
+.banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 105%;
+  background: rgba(34, 5, 5, 0.5); /* Black overlay with 50% opacity */
+  z-index: 1;
+}
+
+.banner img {
+  max-height: 105%;
+  width: 100%;
+  object-fit: cover; /* Ensures the image covers the banner */
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 30px 30px 30px 30px;
+}
+
+.banner {
+  position: relative;
+  width: 100%;
+  height: 40vh; /* Adjust the height if needed */
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-overlay {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.9));
 }
 </style>

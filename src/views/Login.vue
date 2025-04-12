@@ -45,38 +45,11 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
 import { useRouter } from 'vue-router'
-
+import { $http } from '@/plugins/http-wrapper'
 export default {
   name: 'Login',
-  setup() {
-    const router = useRouter()
-
-    const handleLogin = async (email: string, password: string) => {
-      try {
-        // Replace this with your actual login API call
-        // const response = await yourAuthService.login(email, password)
-
-        // Store the token
-        localStorage.setItem('token', 'your-auth-token')
-
-        // Get redirect path or default to home
-        const redirectPath = localStorage.getItem('redirectPath') || '/home'
-        localStorage.removeItem('redirectPath')
-
-        // Redirect to the intended page
-        router.push(redirectPath)
-      } catch (error) {
-        console.error('Login failed:', error)
-        // Handle login error (show message, etc.)
-      }
-    }
-
-    return {
-      handleLogin,
-    }
-  },
   data() {
     return {
       email: '',
@@ -84,9 +57,49 @@ export default {
       showPassword: false,
     }
   },
+  async created() {
+    this.router = useRouter()
+    try {
+      const response = await $http.get('/auth/check', {
+        withCredentials: true,
+      })
+      if (response.loggedIn) {
+        this.router.push('/') // Redirect to home if already logged in
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+    }
+  },
+
   methods: {
     async handleSubmit() {
-      await this.handleLogin(this.email, this.password)
+      try {
+        const response = await $http.post(
+          '/auth/login',
+          {
+            email: this.email,
+            password: this.password,
+          },
+          {
+            withCredentials: true,
+          }
+        )
+
+        // Verify auth status
+        const authCheck = await $http.get('/auth/check', {
+          withCredentials: true,
+        })
+
+        if (authCheck.loggedIn) {
+          location.reload()
+          this.router.push('/')
+        } else {
+          throw new Error('Login verification failed')
+        }
+      } catch (error) {
+        console.error('Login failed:', error)
+        alert('Login failed. Please check your credentials and try again.')
+      }
     },
   },
 }

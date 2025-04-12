@@ -41,6 +41,7 @@ interface HttpWrapperOptions {
 export class HttpWrapper {
   private $axios: AxiosInstance
   private customHeaders: Record<string, string>
+  private accessToken: string | null = null
 
   private errorMessages: Record<number, string> = {
     400: 'Request data went wrong',
@@ -57,21 +58,14 @@ export class HttpWrapper {
       baseURL,
       responseType,
       headers: { ...DEFAULT_HEADERS, ...headers },
+      withCredentials: true
     })
-  }
-
-  removeAccessToken(): void {
-    this.$axios.defaults.headers.common = { ...DEFAULT_HEADERS, ...this.customHeaders }
-  }
-
-  setAccessToken(token: string, type = 'Bearer '): void {
-    this.$axios.defaults.headers.common['Authorization'] = `${type}${token}`
   }
 
   async get<T>(
     url: string,
     params: Record<string, any> = {},
-    options = DEFAULT_REQ_OPTS,
+    options = DEFAULT_REQ_OPTS
   ): Promise<T> {
     return this.sendRequest<T>(url, REQUEST_METHODS.GET, options, params)
   }
@@ -87,7 +81,7 @@ export class HttpWrapper {
   async delete<T>(
     url: string,
     params: Record<string, any> = {},
-    options = DEFAULT_REQ_OPTS,
+    options = DEFAULT_REQ_OPTS
   ): Promise<T> {
     return this.sendRequest<T>(url, REQUEST_METHODS.DELETE, options, params)
   }
@@ -104,7 +98,7 @@ export class HttpWrapper {
     url: string,
     method: RequestMethod,
     options = DEFAULT_REQ_OPTS,
-    payload: any = {},
+    payload: any = {}
   ): Promise<T> {
     if (!url) {
       throw new Error('URL must be a valid string')
@@ -122,6 +116,15 @@ export class HttpWrapper {
     }
 
     return this.parseResponse<T>(this.$axios.request<T>(config))
+  }
+
+  setAccessToken(token: string | null): void {
+    this.accessToken = token
+    if (token) {
+      this.$axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    } else {
+      delete this.$axios.defaults.headers.common['Authorization']
+    }
   }
 
   private async parseResponse<T>(requester: Promise<AxiosResponse<T>>): Promise<T> {
