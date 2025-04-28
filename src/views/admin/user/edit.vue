@@ -1,6 +1,6 @@
 <template>
   <div class="content-wrapper p-5">
-    <h2 class="text-success">Tạo Mới Tài Khoản</h2>
+    <h2 class="text-warning">Edit User</h2>
     <form @submit.prevent="handleSubmit" novalidate style="margin-bottom: 100px">
       <div class="row">
         <div class="col-md-6 mb-3">
@@ -29,14 +29,9 @@
 
         <div class="col-md-6 mb-3">
           <label for="password" class="form-label">Password</label>
-          <input
-            type="password"
-            id="password"
-            v-model="user.password"
-            class="form-control"
-            required
-          />
+          <input type="password" id="password" v-model="user.password" class="form-control" />
           <div v-if="errors.password" class="text-danger mt-1">{{ errors.password }}</div>
+          <small class="form-text text-muted">Leave blank to keep current password</small>
         </div>
 
         <div class="col-md-6 mb-3">
@@ -72,13 +67,29 @@
             class="form-control"
             accept="image/*"
           />
+          <div v-if="avatarPreview" class="mt-2">
+            <strong>Selected Avatar Preview:</strong><br />
+            <img
+              :src="avatarPreview"
+              alt="Selected Avatar Preview"
+              style="max-width: 200px; border-radius: 8px"
+            />
+          </div>
+          <div v-else-if="currentAvatar" class="mt-2">
+            <strong>Current Avatar:</strong><br />
+            <img
+              :src="getImage(currentAvatar)"
+              alt="Current Avatar"
+              style="max-width: 200px; border-radius: 8px"
+            />
+          </div>
         </div>
       </div>
 
       <div v-if="errors.general" class="text-danger mb-3">{{ errors.general }}</div>
 
       <div class="d-flex gap-2 mt-4">
-        <button type="submit" class="btn btn-primary">Create User</button>
+        <button type="submit" class="btn btn-primary">Update User</button>
         <button type="button" class="btn btn-secondary" @click="cancel">Cancel</button>
       </div>
     </form>
@@ -87,10 +98,11 @@
 
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { $http } from '@/plugins/http-wrapper'
 
 const router = useRouter()
+const route = useRoute()
 const errors = reactive({})
 const user = reactive({
   name: '',
@@ -100,9 +112,11 @@ const user = reactive({
   balance: '',
   roleIds: '',
 })
-
 const roles = ref([])
 const selectedRole = ref('')
+const currentAvatar = ref(null)
+const avatarFile = ref(null)
+const avatarPreview = ref(null)
 
 onMounted(async () => {
   try {
@@ -111,18 +125,39 @@ onMounted(async () => {
   } catch (error) {
     console.error('Failed to fetch roles:', error)
   }
+  await fetchUserDetail()
 })
+
+async function fetchUserDetail() {
+  try {
+    const userId = route.params.id
+    const res = await $http.get(`/users/detail/id/${userId}`)
+    if (res) {
+      console.log(res)
+      user.name = res.name
+      user.email = res.email
+      user.mobileNumber = res.mobileNumber
+      user.balance = res.balance
+      selectedRole.value = res.roleIds.join(', ') || ''
+      currentAvatar.value = res.avatar || null
+    }
+  } catch (error) {
+    errors.general = 'Failed to load user details: ' + error.message
+  }
+}
 
 function handleFileChange(event) {
   const file = event.target.files[0]
   if (file) {
-    console.log('Selected file:', file)
-    user.avatar = file
+    avatarFile.value = file
+    if (avatarPreview.value) {
+      URL.revokeObjectURL(avatarPreview.value)
+    }
+    avatarPreview.value = URL.createObjectURL(file)
   }
 }
 
 async function handleSubmit() {
-  // Clear previous errors
   Object.keys(errors).forEach((key) => delete errors[key])
 
   let hasError = false
@@ -136,10 +171,6 @@ async function handleSubmit() {
   }
   if (user.mobileNumber.length < 10) {
     errors.mobileNumber = 'Mobile number must be 10 numbers.'
-    hasError = true
-  }
-  if (!user.password) {
-    errors.password = 'Password is required.'
     hasError = true
   }
   if (user.balance === '' || user.balance < 0) {
@@ -157,38 +188,38 @@ async function handleSubmit() {
     name: user.name,
     email: user.email,
     mobileNumber: user.mobileNumber,
-    password: user.password,
+    password: user.password || undefined, // optional password update
     balance: Number(user.balance),
     roleId: Number(selectedRole.value),
   }
 
   const formData = new FormData()
   const userBlob = new Blob([JSON.stringify(userDTO)], { type: 'application/json' })
-  formData.append('userDTO', userBlob, '') // Append with empty filename
-  if (user.avatar) {
-    formData.append('imageFile', user.avatar)
-  }
-
-  // Debug log FormData contents
-  for (const pair of formData.entries()) {
-    console.log(pair[0] + ':', pair[1])
+  formData.append('userDTO', userBlob, '')
+  if (avatarFile.value) {
+    formData.append('imageFile', avatarFile.value)
   }
 
   try {
-    const savedUser = await $http.post('/users/register', formData, {
+    await $http.put(`/users/update/${route.params.id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     })
-    alert('User created successfully!')
-    router.push({ name: 'UserList' }) // make sure this route exists
+    alert('User updated successfully!')
+    router.push({ name: 'UserList' })
   } catch (error) {
-    errors.general = 'Failed to create user: ' + error.message
+    errors.general = 'Failed to update user: ' + error.message
   }
 }
 
 function cancel() {
   router.push({ name: 'UserList' })
+}
+
+function getImage(imageName) {
+  if (!imageName) return ''
+  return `http://localhost:8080${imageName.startsWith('/') ? '' : '/'}${imageName}`
 }
 </script>
 
