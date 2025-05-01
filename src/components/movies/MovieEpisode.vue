@@ -1,26 +1,9 @@
 <template>
   <div class="card text-dark mt-3 p-3">
+    <h5 class="text-white">Danh sách tập</h5>
     <div class="episode-list">
       <div class="episode-item" v-for="episode in episodes" :key="episode.id">
-        <!-- Episode button with condition for season -->
-        <button v-if="episode.season === 1" class="episode-btn season-1">
-          {{ episode.episodeNumber }}
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Episode List -->
-  <div class="card text-dark mt-3 p-3">
-    <h5>Danh sách tập</h5>
-    <div class="episode-list">
-      <div class="episode-item" v-for="episode in episodes" :key="episode.id">
-        <!-- Episode button with condition for season -->
-        <button v-if="episode.season === 1" class="episode-btn season-1">
-          {{ episode.episodeNumber }}
-        </button>
-
-        <button v-else-if="episode.season === 2" class="episode-btn season-2">
+        <button class="episode-btn season-1">
           {{ episode.episodeNumber }}
         </button>
       </div>
@@ -32,9 +15,6 @@
 export default {
   props: {
     episodes: Array,
-  },
-  created() {
-    console.log('Episodes received in MovieEpisode:', this.episodes)
   },
 }
 </script>
@@ -78,17 +58,7 @@ export default {
   background-color: black;
 }
 
-.episode-btn.season-2 {
-  color: white;
-  border-color: black;
-  background-color: black;
-}
-
 .episode-btn.season-1:hover {
-  background-color: #4bb7ed;
-}
-
-.episode-btn.season-2:hover {
   background-color: #4bb7ed;
 }
 </style>
