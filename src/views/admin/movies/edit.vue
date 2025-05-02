@@ -39,14 +39,39 @@
       </div>
 
       <div class="mb-3">
-        <label for="genre" class="form-label">Genre</label>
-        <select id="genre" v-model.number="movie.category.id" class="form-select" required>
-          <option value="" disabled>Select a category</option>
-          <option v-for="category in categories" :key="category.id" :value="category.id">
-            {{ category.name }}
-          </option>
-        </select>
-        <div v-if="errors.category" class="text-danger mt-1">{{ errors.category }}</div>
+        <label for="parentID" class="form-label"
+          >ParentID ( Leave if you don't want to change)</label
+        >
+        <input type="number" id="parentID" v-model="movie.parentID" class="form-control" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Genres</label>
+        <div class="checkbox-row">
+          <div
+            class="form-check"
+            v-for="category in categories"
+            :key="category.id"
+            style="margin-right: 15px"
+          >
+            <input
+              class="form-check-input"
+              type="checkbox"
+              :id="'category-' + category.id"
+              :value="category.id"
+              v-model="movie.categoryIds"
+            />
+            <label class="form-check-label text-dark" :for="'category-' + category.id">
+              {{ category.name }}
+            </label>
+          </div>
+        </div>
+        <div v-if="errors.categoryIds" class="text-danger mt-1">{{ errors.categoryIds }}</div>
+        <div class="selected-categories mt-2">
+          <span v-for="catId in movie.categoryIds" :key="catId" class="badge bg-primary me-1">
+            {{ categories.find((cat) => cat.id === catId)?.name || 'Unknown' }}
+          </span>
+        </div>
       </div>
 
       <div class="mb-3">
@@ -126,7 +151,8 @@ const movie = reactive({
   description: '',
   releaseDate: '',
   videoUrl: '',
-  category: { id: null },
+  categoryIds: [],
+  parentID: '',
   duration: '',
   rating: '',
   tokens: 0,
@@ -156,7 +182,8 @@ async function fetchMovieDetail() {
       movie.description = res.description
       movie.releaseDate = res.releaseDate ? res.releaseDate.split('T')[0] : ''
       movie.videoUrl = res.videoUrl
-      movie.category.id = res.category?.id || null
+      movie.parentID = res.parentID
+      movie.categoryIds = res.categories ? res.categories.map((cat) => cat.id) : []
       movie.duration = res.duration
       movie.rating = res.rating
       movie.tokens = res.tokens || 0
@@ -200,8 +227,8 @@ async function handleSubmit() {
     errors.releaseDate = 'Release date is required.'
     hasError = true
   }
-  if (!movie.category.id) {
-    errors.category = 'Category is required.'
+  if (!movie.categoryIds.length) {
+    errors.categoryIds = 'At least one category is required.'
     hasError = true
   }
   if (!movie.duration) {
@@ -246,11 +273,10 @@ async function handleSubmit() {
     description: movie.description,
     releaseDate: movie.releaseDate,
     duration: movie.duration,
+    parentID: movie.parentID,
     rating: movie.rating,
     tokens: movie.tokens,
-    category: {
-      id: movie.category.id,
-    },
+    categories: movie.categoryIds.map((id) => ({ id })),
   }
   formData.append('movie', JSON.stringify(movieData))
   if (posterFile.value) {
@@ -290,5 +316,11 @@ function getImage(imageName) {
 
 .container {
   max-width: 600px;
+}
+.checkbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
 }
 </style>

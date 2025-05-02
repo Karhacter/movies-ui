@@ -15,8 +15,8 @@
 </template>
 
 <script>
-import Banner from '../components/Banner.vue'
-import Recommend from '../components/homepages/Recommend.vue'
+import Banner from '@/components/Banner.vue'
+import Recommend from '@/components/homepages/Recommend.vue'
 export default {
   name: 'BalancedHomepage',
   components: {
@@ -26,6 +26,7 @@ export default {
 }
 </script>
 
+<!-- the style just in scoped -->
 <style scoped>
 .flip-card_i {
   position: relative;

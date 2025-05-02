@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="navbar navbar-expand-lg navbar-dark pt-1"
+    class="navbar navbar-expand-lg navbar-dark"
     :class="{ 'bg-dark': isScrolled }"
     id="header-nav"
   >
@@ -64,10 +64,25 @@
                   <i v-else class="fas fa-user-circle default-avatar"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                  <li><a class="dropdown-item" href="#">Profile</a></li>
-                  <li><a class="dropdown-item" href="#">Settings</a></li>
+                  <li>
+                    <router-link class="dropdown-item" to="/account/info"
+                      ><i class="fa fa-person"></i>&nbsp;&nbsp;&nbsp; Thông tin tài
+                      khoản</router-link
+                    >
+                  </li>
+                  <li>
+                    <router-link class="dropdown-item" to="/watchlist"
+                      ><i class="fa-solid fa-film"></i>&nbsp;&nbsp;&nbsp;Tủ Phim</router-link
+                    >
+                  </li>
+                  <li>
+                    <router-link class="dropdown-item" href="#"
+                      ><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;Lịch
+                      Sử</router-link
+                    >
+                  </li>
                   <li><hr class="dropdown-divider" /></li>
-                  <li><a class="dropdown-item" href="/login" @click="handleLogout">Logout</a></li>
+                  <li><a class="dropdown-item" href="/login" @click="handleLogout">Thoát</a></li>
                 </ul>
               </div>
             </div>
@@ -85,8 +100,8 @@
 </template>
 
 <script>
-import VNav from '../components/Nav.vue'
-import { $http } from '../plugins/http-wrapper'
+import VNav from '@/components/Nav.vue'
+import { $http } from '@/plugins/http-wrapper'
 
 export default {
   components: {
@@ -129,11 +144,20 @@ export default {
 
       const res = await $http.get('/auth/check')
       if (!res) {
-        thiss.isLoggedIn = false
+        this.isLoggedIn = false
       }
       this.isLoggedIn = !!token
-      if (this.isLoggedIn && !this.userAvatar) {
-        this.userAvatar = '/src/assets/avatar.png'
+      if (this.isLoggedIn) {
+        try {
+          const userInfo = await $http.get('/auth/userinfo')
+          if (userInfo && userInfo.avatar) {
+            this.userAvatar = `http://localhost:8080${userInfo.avatar}`
+          } else {
+            this.userAvatar = '/src/assets/avatar.png'
+          }
+        } catch (error) {
+          this.userAvatar = '/src/assets/avatar.png'
+        }
       }
     },
     async handleLogout(e) {
@@ -188,7 +212,6 @@ export default {
 
 /* Navbar fixed lauyout  */
 .navbar {
-  position: fixed;
   top: 0;
   left: 0;
   right: 0;

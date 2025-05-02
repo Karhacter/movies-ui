@@ -12,6 +12,7 @@
           </router-link>
         </div>
 
+        <h2 class="text-center text-danger" v-if="movies.length == []">Cho Tôi Xin Rác</h2>
         <div class="card-body">
           <table class="table table-bordered table-hover table-striped">
             <thead>
@@ -27,7 +28,7 @@
             </thead>
 
             <tbody v-for="movie in movies" :key="movie.id">
-              <tr class="datarow" v-if="movie.statusDelete === 0">
+              <tr class="datarow">
                 <td>
                   <input type="checkbox" id="checkId[]" />
                 </td>
@@ -43,7 +44,9 @@
                 </td>
                 <td>
                   <div class="cate-name">
-                    {{ movie.category.name }}
+                    <span v-for="(category, index) in movie.categories" :key="category.id">
+                      {{ category.name }}<span v-if="index < movie.categories.length - 1">, </span>
+                    </span>
                   </div>
                 </td>
                 <td>
@@ -77,23 +80,45 @@ import { $http } from '@/plugins/http-wrapper'
 export default {
   data() {
     return {
-      movies: [], // Placeholder for movie data
-      categories: [], // Placeholder for category data
+      movies: [],
+      categories: [],
+      currentPage: 0,
+      pageSize: 10,
+      totalPages: 0,
+      loading: false,
+      sortBy: 'rating',
+      sortOrder: 'desc',
+      searchQuery: '',
     }
+  },
+  async mounted() {
+    this.fetchMovies()
+    this.fetchCategories()
   },
   methods: {
     getImage(imageName) {
-      return new URL(`../../../assets/img/movies/${imageName}`, import.meta.url).href
+      if (!imageName) return ''
+      return `http://localhost:8080${imageName.startsWith('/') ? '' : '/'}${imageName}`
     },
-    async fetchMovies() {
+
+    async fetchMovies(page = 0) {
+      if (this.loading) return
       try {
-        const res = await $http.get('/movies/get-all')
-        if (res) {
-          this.movies = res
-          console.log(res)
+        this.loading = true
+        const queryParams = `?page=${page}&size=${this.pageSize}`
+        console.log('Fetching movies with query:', queryParams)
+        const res = await $http.get('/movies/trash' + queryParams)
+        if (res && res.content) {
+          this.movies = res.content
+          this.totalPages = res.totalPages
+          this.currentPage = page
+        } else {
+          console.error('Unexpected response structure:', res)
         }
       } catch (e) {
-        console.error('Error fetching movies:', e.message)
+        console.error('Error fetching movies:', e)
+      } finally {
+        this.loading = false
       }
     },
     async fetchCategories() {
@@ -125,10 +150,11 @@ export default {
         console.error('Failed', error)
       }
     },
-  },
-  mounted() {
-    this.fetchMovies() // Fetch movies when component is mounted
-    this.fetchCategories() // Fetch categories when component is mounted
+    goToPage(page) {
+      if (page >= 0 && page < this.totalPages) {
+        this.fetchMovies(page)
+      }
+    },
   },
 }
 </script>

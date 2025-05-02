@@ -30,8 +30,8 @@
               </tr>
             </thead>
 
-            <tbody v-for="(movie, index) in movies" :key="index">
-              <tr class="datarow" v-if="movie.statusDelete != 0">
+            <tbody v-for="movie in movies" :key="movie.id">
+              <tr class="datarow" v-if="movie.statusDelete == 1">
                 <td>
                   <input type="checkbox" id="checkId[]" />
                 </td>
@@ -47,7 +47,9 @@
                 </td>
                 <td>
                   <div class="cate-name">
-                    {{ movie.category.name }}
+                    <span v-for="(category, index) in movie.categories" :key="category.id">
+                      {{ category.name }}<span v-if="index < movie.categories.length - 1">, </span>
+                    </span>
                   </div>
                 </td>
                 <td>
@@ -78,6 +80,24 @@
               </tr>
             </tbody>
           </table>
+          <div v-if="loading" class="text-center text-primary my-3">Loading movies...</div>
+          <div class="pagination-controls" style="padding: 10px; text-align: center">
+            <button
+              class="btn btn-sm btn-primary me-2"
+              :disabled="currentPage === 0 || loading"
+              @click="goToPage(currentPage - 1)"
+            >
+              Previous
+            </button>
+            <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+            <button
+              class="btn btn-sm btn-primary ms-2"
+              :disabled="currentPage === totalPages - 1 || loading"
+              @click="goToPage(currentPage + 1)"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -90,25 +110,44 @@ import { $http } from '@/plugins/http-wrapper'
 export default {
   data() {
     return {
-      movies: [], // Placeholder for movie data
-      categories: [], // Placeholder for category data
+      movies: [],
+      categories: [],
+      currentPage: 0,
+      pageSize: 10,
+      totalPages: 0,
+      loading: false,
+      sortBy: 'rating',
+      sortOrder: 'desc',
+      searchQuery: '',
     }
   },
   methods: {
     getImage(imageName) {
-      return `http://localhost:8080${imageName}`
+      if (!imageName) return ''
+      return `http://localhost:8080${imageName.startsWith('/') ? '' : '/'}${imageName}`
     },
-    async fetchMovies() {
+    async fetchMovies(page = 0) {
+      if (this.loading) return
       try {
-        const res = await $http.get('/movies/get-all')
-        if (res) {
-          this.movies = res
-          console.log(res)
+        this.loading = true
+        const queryParams = `?page=${page}&size=${this.pageSize}`
+        console.log('Fetching movies with query:', queryParams)
+        const res = await $http.get('/movies/index' + queryParams)
+        console.log('Response from movies/index:', res)
+        if (res && res.content) {
+          this.movies = res.content
+          this.totalPages = res.totalPages
+          this.currentPage = page
+        } else {
+          console.error('Unexpected response structure:', res)
         }
       } catch (e) {
-        console.error('Error fetching movies:', e.message)
+        console.error('Error fetching movies:', e)
+      } finally {
+        this.loading = false
       }
     },
+
     async fetchCategories() {
       try {
         const res = await $http.get('/categories/index')
@@ -122,20 +161,25 @@ export default {
     editMovie(id) {
       // Placeholder for edit functionality
     },
+
     async deleteMovie(id) {
       try {
         // Soft delete: set statusDelete to 1
         const response = await $http.post(`/movie/soft-delete/${id}`, { statusDelete: 1 })
         if (response) {
-          this.fetchMovies() // Refresh movie list after delete
+          this.fetchMovies(this.currentPage) // Refresh movie list after delete
         }
       } catch (error) {
         console.error('Failed to soft delete movie:', error)
       }
     },
+    goToPage(page) {
+      if (page >= 0 && page < this.totalPages) {
+        this.fetchMovies(page)
+      }
+    },
   },
   mounted() {
-    ;``
     this.fetchMovies() // Fetch movies when component is mounted
     this.fetchCategories() // Fetch categories when component is mounted
   },

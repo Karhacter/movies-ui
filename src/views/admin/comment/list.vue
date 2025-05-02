@@ -56,7 +56,7 @@ const fetchComments = async () => {
   }
   try {
     const response = await axios.get('http://localhost:8080/api/comments/list', {
-      params: { movieTitle: movieTitle.value },
+      movieTitle: movieTitle.value,
     })
     comments.value = response.data
   } catch (error) {

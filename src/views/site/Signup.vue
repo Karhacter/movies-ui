@@ -63,55 +63,7 @@
   </div>
 </template>
 
-<script lang="ts">
-import { useRouter } from 'vue-router'
-
-export default {
-  name: 'Signup',
-  setup() {
-    const router = useRouter()
-
-    const handleSignup = async (name: string, email: string, password: string) => {
-      try {
-        // Replace this with your actual signup API call
-        // const response = await yourAuthService.signup(name, email, password)
-
-        // Store the token
-        localStorage.setItem('token', 'UserToken')
-
-        // Redirect to home page after successful signup
-        router.push('/home')
-      } catch (error) {
-        console.error('Signup failed:', error)
-        // Handle signup error (show message, etc.)
-      }
-    }
-
-    return {
-      handleSignup,
-    }
-  },
-  data() {
-    return {
-      name: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      showPassword: false,
-      showConfirmPassword: false,
-    }
-  },
-  methods: {
-    async handleSubmit() {
-      if (this.password !== this.confirmPassword) {
-        alert('Passwords do not match!')
-        return
-      }
-      await this.handleSignup(this.name, this.email, this.password)
-    },
-  },
-}
-</script>
+<script></script>
 
 <style scoped>
 .login-container {

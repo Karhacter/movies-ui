@@ -11,12 +11,9 @@
       <h4>Phim Liên Kết</h4>
       <div class="episode-list">
         <div class="episode-item" v-for="season in seasons" :key="season.id">
-          <button
-            class="season-button"
-            @click="$router.push({ name: 'movieDetail', params: { slug: season.slug } })"
-          >
+          <router-link class="season-button text-center" :to="`/movie/${season.slug}`">
             Phần {{ season.seasonNumber }}
-          </button>
+          </router-link>
         </div>
       </div>
     </div>
@@ -72,39 +69,8 @@ export default {
       comments: [],
       loading: false,
       error: null,
-      baseShow: null,
       seasons: [],
-      previousSeason: null,
     }
-  },
-
-  computed: {
-    seasonCount() {
-      return this.seasons.length
-    },
-    baseSeason() {
-      return this.seasons.find((season) => season.season_number === 1 || season.seasonNumber === 1)
-    },
-    otherSeasons() {
-      return this.seasons.filter(
-        (season) => season.season_number !== 1 && season.seasonNumber !== 1
-      )
-    },
-    previousSeason() {
-      if (!this.movie.season_number && !this.movie.seasonNumber) {
-        return null
-      }
-      const currentSeasonNumber = this.movie.season_number || this.movie.seasonNumber
-      const prevSeasonNumber = currentSeasonNumber - 1
-      return (
-        this.seasons.find(
-          (season) =>
-            (season.season_number === prevSeasonNumber ||
-              season.seasonNumber === prevSeasonNumber) &&
-            (season.parent_id === this.movie.parent_id || season.parentId === this.movie.parent_id)
-        ) || null
-      )
-    },
   },
 
   watch: {

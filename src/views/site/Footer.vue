@@ -4,7 +4,7 @@
       <hr class="footer-hr">
       <div class="footer-content">
         <div class="footer-left">
-          <a href="home.html"><img class="footer-logo" src="../assets/img/logo.png" alt="" width="30"
+          <a href="home.html"><img class="footer-logo" src="@/assets/img/logo.png" alt="" width="30"
               height="24"></a>
           <p class="footer-bottom-tagline">Watch! Chill! Repeat!</p>
         </div>
@@ -45,7 +45,7 @@
           <p class="footer-links">
           <h2 class="footer-heading">Contact Us</h2>
           <p class="footer-bottom-tagline">Feel free to contact us.</p>
-          <a class="footer-contact-button" href="contact">Contact</a>
+          <router-link class="footer-contact-button" to="/contact">Contact</router-link>
           </p>
         </div>
       </div>

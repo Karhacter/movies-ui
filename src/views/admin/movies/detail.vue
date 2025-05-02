@@ -17,6 +17,7 @@
             <p><strong>Description:</strong> {{ movie.description }}</p>
             <p><strong>Release Date:</strong> {{ formatDate(movie.releaseDate) }}</p>
             <p><strong>Genre:</strong> {{ movie.category?.name || 'N/A' }}</p>
+            <p><strong>parentID:</strong> {{ movie.parentID || 'N/A' }}</p>
             <p><strong>Duration:</strong> {{ movie.duration }} minutes</p>
             <p><strong>Rating:</strong> {{ movie.rating }}</p>
             <p><strong>Tokens:</strong> {{ movie.tokens }}</p>

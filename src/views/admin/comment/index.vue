@@ -30,6 +30,23 @@
           </div>
         </div>
       </div>
+      <div class="pagination-controls" style="padding: 10px; text-align: center; margin-top: 20px">
+        <button
+          class="btn btn-sm btn-primary me-2"
+          :disabled="currentPage === 0 || loading"
+          @click="goToPage(currentPage - 1)"
+        >
+          Previous
+        </button>
+        <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+        <button
+          class="btn btn-sm btn-primary ms-2"
+          :disabled="currentPage === totalPages - 1 || loading"
+          @click="goToPage(currentPage + 1)"
+        >
+          Next
+        </button>
+      </div>
     </section>
   </div>
 </template>
@@ -48,40 +65,55 @@ export default {
       commentsLoading: false,
       commentsError: null,
       selectedMovieTitle: null,
+      currentPage: 0,
+      pageSize: 10,
+      totalPages: 0,
     }
   },
-  async mounted() {
-    this.loading = true
-    this.error = null
-    try {
-      const moviesData = await $http.get('/movies/get-all')
-      console.log('Fetched movies data:', moviesData)
-      // Fetch comment count for each movie
-      const moviesWithCounts = await Promise.all(
-        moviesData.map(async (movie) => {
-          let count = 0
-          const movieId = movie.id || movie.movieId || movie.movieID
-          try {
-            const countResponse = await $http.get(`comments/count/movie/${movieId}`)
-            // Assuming countResponse is { count: number }
-            count = countResponse.count !== undefined ? countResponse.count : countResponse
-          } catch (e) {
-            console.error(`Failed to fetch comment count for movie ${movieId}:`, e)
-          }
-          return {
-            title: movie.title,
-            commentsCount: count,
-            id: movieId,
-          }
-        })
-      )
-      this.movies = moviesWithCounts
-    } catch (error) {
-      console.error('Failed to fetch movies:', error)
-      this.error = 'Failed to load movies data.'
-    } finally {
-      this.loading = false
-    }
+  methods: {
+    async fetchMovies(page = 0) {
+      if (this.loading) return
+      this.loading = true
+      this.error = null
+      try {
+        const queryParams = `?page=${page}&size=${this.pageSize}`
+        const moviesData = await $http.get('/movies/index' + queryParams)
+        // Fetch comment count for each movie
+        const moviesWithCounts = await Promise.all(
+          moviesData.content.map(async (movie) => {
+            let count = 0
+            const movieId = movie.id || movie.movieId || movie.movieID
+            try {
+              const countResponse = await $http.get(`comments/count/movie/${movieId}`)
+              count = countResponse.count !== undefined ? countResponse.count : countResponse
+            } catch (e) {
+              console.error(`Failed to fetch comment count for movie ${movieId}:`, e)
+            }
+            return {
+              title: movie.title,
+              commentsCount: count,
+              id: movieId,
+            }
+          })
+        )
+        this.movies = moviesWithCounts
+        this.totalPages = moviesData.totalPages
+        this.currentPage = page
+      } catch (error) {
+        console.error('Failed to fetch movies:', error)
+        this.error = 'Failed to load movies data.'
+      } finally {
+        this.loading = false
+      }
+    },
+    goToPage(page) {
+      if (page >= 0 && page < this.totalPages) {
+        this.fetchMovies(page)
+      }
+    },
+  },
+  mounted() {
+    this.fetchMovies()
   },
 }
 </script>

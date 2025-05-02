@@ -39,14 +39,24 @@
       </div>
 
       <div class="mb-3">
-        <label for="genre" class="form-label">Genre</label>
-        <select id="genre" v-model.number="movie.category.id" class="form-select" required>
-          <option value="" disabled>Select a category</option>
+        <label for="duration" class="form-label"
+          >ParentID ( Leave if you don't want to set up)</label
+        >
+        <input type="number" id="parentID" v-model="movie.parentID" class="form-control" />
+      </div>
+      <div class="mb-3">
+        <label for="genre" class="form-label">Genres</label>
+        <select id="genre" v-model="movie.categoryIds" class="form-select" multiple required>
           <option v-for="category in categories" :key="category.id" :value="category.id">
             {{ category.name }}
           </option>
         </select>
-        <div v-if="errors.category" class="text-danger mt-1">{{ errors.category }}</div>
+        <div v-if="errors.categoryIds" class="text-danger mt-1">{{ errors.categoryIds }}</div>
+        <div class="selected-categories mt-2">
+          <span v-for="catId in movie.categoryIds" :key="catId" class="badge bg-primary me-1">
+            {{ categories.find((cat) => cat.id === catId)?.name || 'Unknown' }}
+          </span>
+        </div>
       </div>
 
       <div class="mb-3">
@@ -108,8 +118,9 @@ const movie = reactive({
   description: '',
   releaseDate: '',
   videoUrl: '',
-  category: { id: null },
+  categoryIds: [],
   duration: '',
+  parentID: '',
   rating: '',
   tokens: 0,
 })
@@ -131,103 +142,102 @@ function handleFileChange(event) {
   }
 }
 
-async function handleSubmit() {
-  // Clear previous errors
-  Object.keys(errors).forEach((key) => delete errors[key])
+  async function handleSubmit() {
+    // Clear previous errors
+    Object.keys(errors).forEach((key) => delete errors[key])
 
-  // Basic validation
-  let hasError = false
-  if (!movie.title) {
-    errors.title = 'Title is required.'
-    hasError = true
-  }
-  if (!movie.videoUrl) {
-    errors.videoUrl = 'Video URL is required.'
-    hasError = true
-  }
-  if (!movie.description) {
-    errors.description = 'Description is required.'
-    hasError = true
-  }
-  if (!movie.releaseDate) {
-    errors.releaseDate = 'Release date is required.'
-    hasError = true
-  }
-  if (!movie.category.id) {
-    errors.category = 'Category is required.'
-    hasError = true
-  }
-  if (!movie.duration) {
-    errors.duration = 'Duration is required.'
-    hasError = true
-  }
-  if (!movie.rating) {
-    errors.rating = 'Rating is required.'
-    hasError = true
-  }
-  if (hasError) {
-    return
-  }
+    // Basic validation
+    let hasError = false
+    if (!movie.title) {
+      errors.title = 'Title is required.'
+      hasError = true
+    }
+    if (!movie.videoUrl) {
+      errors.videoUrl = 'Video URL is required.'
+      hasError = true
+    }
+    if (!movie.description) {
+      errors.description = 'Description is required.'
+      hasError = true
+    }
+    if (!movie.releaseDate) {
+      errors.releaseDate = 'Release date is required.'
+      hasError = true
+    }
+    if (!movie.categoryIds.length) {
+      errors.categoryIds = 'At least one category is required.'
+      hasError = true
+    }
+    if (!movie.duration) {
+      errors.duration = 'Duration is required.'
+      hasError = true
+    }
+    if (!movie.rating) {
+      errors.rating = 'Rating is required.'
+      hasError = true
+    }
+    if (hasError) {
+      return
+    }
 
-  // Additional validation
-  if (movie.description.length < 10) {
-    errors.description = 'Description must be at least 10 characters long.'
-    hasError = true
-  }
+    // Additional validation
+    if (movie.description.length < 10) {
+      errors.description = 'Description must be at least 10 characters long.'
+      hasError = true
+    }
 
-  if (movie.duration < 10) {
-    errors.duration = 'Duration must be at least 10 minutes.'
-    hasError = true
-  }
+    if (movie.duration < 10) {
+      errors.duration = 'Duration must be at least 10 minutes.'
+      hasError = true
+    }
 
-  const ratingNum = Number(movie.rating)
-  if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 10) {
-    errors.rating = 'Rating must be a number between 1 and 10.'
-    hasError = true
-  }
+    const ratingNum = Number(movie.rating)
+    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 10) {
+      errors.rating = 'Rating must be a number between 1 and 10.'
+      hasError = true
+    }
 
-  // Validate releaseDate is not in the past
-  const today = new Date()
-  const releaseDate = new Date(movie.releaseDate)
-  if (releaseDate < today) {
-    errors.releaseDate = 'Release date cannot be in the past.'
-    hasError = true
-  }
+    // Validate releaseDate is not in the past
+    const today = new Date()
+    const releaseDate = new Date(movie.releaseDate)
+    if (releaseDate < today) {
+      errors.releaseDate = 'Release date cannot be in the past.'
+      hasError = true
+    }
 
-  if (hasError) {
-    return
-  }
+    if (hasError) {
+      return
+    }
 
-  const formData = new FormData()
-  const movieData = {
-    title: movie.title,
-    videoUrl: movie.videoUrl,
-    description: movie.description,
-    releaseDate: movie.releaseDate,
-    duration: movie.duration,
-    rating: movie.rating,
-    tokens: 0,
-    category: {
-      id: movie.category.id,
-    },
-  }
-  formData.append('movie', JSON.stringify(movieData))
-  if (movie.posterFile) {
-    formData.append('imageFile', movie.posterFile)
-  }
+    const formData = new FormData()
+    const movieData = {
+      title: movie.title,
+      videoUrl: movie.videoUrl,
+      description: movie.description,
+      releaseDate: movie.releaseDate,
+      duration: movie.duration,
+      rating: movie.rating,
+      parentID: movie.parentID === '' ? null : Number(movie.parentID),
+      tokens: 0,
+      categories: movie.categoryIds.map((id) => ({ id: Number(id) })),
+    }
+    formData.append('movie', JSON.stringify(movieData))
+    if (movie.posterFile) {
+      formData.append('imageFile', movie.posterFile)
+    }
 
-  try {
-    const savedMovie = await $http.post('/movies/add', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-    alert('Movie created successfully!')
-    router.push({ name: 'AdminListMovie' })
-  } catch (error) {
-    errors.general = 'Failed to create movie: ' + error.message
+    try {
+      const savedMovie = await $http.post('/movies/add', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      alert('Movie created successfully!')
+      router.push({ name: 'AdminListMovie' })
+    } catch (error) {
+      errors.general = 'Failed to create movie: ' + error.message
+    }
   }
-}
 
 function cancel() {
   router.push({ name: 'AdminListMovie' })
@@ -242,5 +252,10 @@ onMounted(() => {
 
 .container {
   max-width: 600px;
+}
+#genre {
+  min-height: 120px;
+  font-size: 1rem;
+  padding: 0.375rem 0.75rem;
 }
 </style>
