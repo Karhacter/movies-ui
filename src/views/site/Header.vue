@@ -24,76 +24,9 @@
           <VNav />
         </ul>
 
-        <form id="searchForm" class="d-flex me-3">
-          <input
-            class="form-control me-2"
-            type="text"
-            id="searchText"
-            placeholder="Search"
-            aria-label="Search"
-          />
-          <button class="btn btn-danger" type="submit">Search</button>
-        </form>
+        <SearchBar />
 
-        <!-- User Avatar/Login Button -->
-        <div class="user-section ps-3">
-          <template v-if="isLoggedIn">
-            <div class="d-flex align-items-center">
-              <!-- Notification Bell -->
-              <div class="notification-bell me-3">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge" v-if="hasNotifications">3</span>
-              </div>
-
-              <!-- User Avatar Dropdown -->
-              <div class="dropdown">
-                <button
-                  class="btn btn-link user-btn"
-                  type="button"
-                  id="userDropdown"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <img
-                    v-if="userAvatar"
-                    :src="userAvatar"
-                    alt="User Avatar"
-                    class="user-avatar"
-                    @error="userAvatar = null"
-                  />
-                  <i v-else class="fas fa-user-circle default-avatar"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                  <li>
-                    <router-link class="dropdown-item" to="/account/info"
-                      ><i class="fa fa-person"></i>&nbsp;&nbsp;&nbsp; Thông tin tài
-                      khoản</router-link
-                    >
-                  </li>
-                  <li>
-                    <router-link class="dropdown-item" to="/watchlist"
-                      ><i class="fa-solid fa-film"></i>&nbsp;&nbsp;&nbsp;Tủ Phim</router-link
-                    >
-                  </li>
-                  <li>
-                    <router-link class="dropdown-item" href="#"
-                      ><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;Lịch
-                      Sử</router-link
-                    >
-                  </li>
-                  <li><hr class="dropdown-divider" /></li>
-                  <li><a class="dropdown-item" href="/login" @click="handleLogout">Thoát</a></li>
-                </ul>
-              </div>
-            </div>
-          </template>
-          <template v-else>
-            <router-link to="/login" class="btn btn-link user-btn">
-              <i class="fas fa-user-circle pr-2"></i>
-              <span>Thành Viên</span>
-            </router-link>
-          </template>
-        </div>
+        <UserMenu />
       </div>
     </div>
   </nav>
@@ -101,100 +34,33 @@
 
 <script>
 import VNav from '@/components/Nav.vue'
-import { $http } from '@/plugins/http-wrapper'
+import SearchBar from '@/components/menus/SearchBar.vue'
+import UserMenu from '@/components/menus/UserMenu.vue'
 
 export default {
   components: {
     VNav,
+    SearchBar,
+    UserMenu,
   },
 
   data() {
     return {
       isScrolled: false,
-      hasNotifications: false,
-      userEmail: null,
-      isLoggedIn: false,
-      userAvatar: null,
     }
   },
 
   mounted() {
-    this.checkAuthState()
     window.addEventListener('scroll', this.handleScroll)
-    // Check auth state every 5 minutes
-    this.authInterval = setInterval(this.checkAuthState, 300000)
   },
 
   beforeUnmount() {
     window.removeEventListener('scroll', this.handleScroll)
-    clearInterval(this.authInterval)
   },
 
   methods: {
     handleScroll() {
       this.isScrolled = window.scrollY > 50
-    },
-    async checkAuthState() {
-      const token =
-        localStorage.getItem('token') ||
-        document.cookie
-          .split('; ')
-          .find((row) => row.startsWith('token='))
-          ?.split('=')[1]
-
-      const res = await $http.get('/auth/check')
-      if (!res) {
-        this.isLoggedIn = false
-      }
-      this.isLoggedIn = !!token
-      if (this.isLoggedIn) {
-        try {
-          const userInfo = await $http.get('/auth/userinfo')
-          if (userInfo && userInfo.avatar) {
-            this.userAvatar = `http://localhost:8080${userInfo.avatar}`
-          } else {
-            this.userAvatar = '/src/assets/avatar.png'
-          }
-        } catch (error) {
-          this.userAvatar = '/src/assets/avatar.png'
-        }
-      }
-    },
-    async handleLogout(e) {
-      e.preventDefault()
-      try {
-        // Get token from localStorage or cookie
-        const token =
-          localStorage.getItem('token') ||
-          document.cookie
-            .split('; ')
-            .find((row) => row.startsWith('token='))
-            ?.split('=')[1]
-
-        // Make logout request with explicit token
-        const response = await $http.post(
-          '/auth/logout',
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-
-        if (response.status === 200) {
-          // Clear client-side token storage
-          localStorage.removeItem('token')
-          document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
-          this.isLoggedIn = false
-          this.userEmail = null
-          // Full reload to clear all state
-        }
-        window.location.href = '/login'
-      } catch (error) {
-        console.error('Logout failed:', error)
-        alert('Logout failed. Please try again.')
-      }
     },
   },
 }

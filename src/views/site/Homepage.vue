@@ -5,9 +5,11 @@
       <Banner />
     </div>
     <!-- end -->
+    <CategoriesDisplay />
     <div class="MovieListTop">
       <Recommend />
     </div>
+    <PremiumPlans />
     <hr />
     <hr />
     <section class="main-content"></section>
@@ -15,18 +17,22 @@
 </template>
 
 <script>
-import Banner from '@/components/Banner.vue'
+import Banner from '@/components/homepages/Banner.vue'
 import Recommend from '@/components/homepages/Recommend.vue'
+import CategoriesDisplay from '@/components/homepages/CategoriesDisplay.vue'
+import PremiumPlans from '@/components/homepages/PremiumPlans.vue'
+
 export default {
   name: 'BalancedHomepage',
   components: {
     Banner,
+    CategoriesDisplay,
     Recommend,
+    PremiumPlans,
   },
 }
 </script>
 
-<!-- the style just in scoped -->
 <style scoped>
 .flip-card_i {
   position: relative;

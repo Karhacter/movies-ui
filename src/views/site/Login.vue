@@ -28,12 +28,9 @@
           <span>OR</span>
         </div>
 
-        <div class="help-text">
-          <a href="#" class="help-link">Need help?</a>
-        </div>
-
+        <SocialLoginButtons />
         <div class="signup-text">
-          New to Apna Theatre? <router-link to="/signup">Sign up now.</router-link>
+          New to My Website? <router-link to="/signup">Sign up now.</router-link>
         </div>
 
         <div class="captcha-text">
@@ -48,8 +45,12 @@
 <script>
 import { useRouter } from 'vue-router'
 import { $http } from '@/plugins/http-wrapper'
+import SocialLoginButtons from '@/components/Login/SocialLoginButtons.vue'
 export default {
   name: 'Login',
+  components: {
+    SocialLoginButtons,
+  },
   data() {
     return {
       email: '',
@@ -70,7 +71,6 @@ export default {
       console.error('Auth check failed:', error)
     }
   },
-
   methods: {
     async handleSubmit() {
       try {
@@ -207,21 +207,6 @@ h1 {
   font-size: 14px;
 }
 
-.help-text {
-  text-align: right;
-  margin: 16px 0;
-}
-
-.help-text a {
-  color: #737373;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.help-text a:hover {
-  text-decoration: underline;
-}
-
 .signup-text {
   color: #737373;
   font-size: 16px;
@@ -253,6 +238,43 @@ h1 {
 
 .captcha-text .learn-more:hover {
   text-decoration: underline;
+}
+
+.social-login-buttons {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+}
+
+.social-button {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.social-button.facebook {
+  background-color: #3b5998;
+}
+
+.social-button.facebook:hover {
+  background-color: #2d4373;
+}
+
+.social-button.google {
+  background-color: #db4437;
+}
+
+.social-button.google:hover {
+  background-color: #a33224;
 }
 
 @media (max-width: 740px) {

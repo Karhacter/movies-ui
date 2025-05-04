@@ -63,7 +63,7 @@
     </div>
 
     <div class="recommend-new-movies">
-      <h5 class="ps-4 container-fluid">Recommend New Movies</h5>
+      <h4 class="text-warning">Bạn Đang Tìm Kiếm Điều Gì ?</h4>
     </div>
   </div>
 </template>
@@ -162,13 +162,13 @@ const handleInfo = () => {
 .banner {
   position: relative;
   width: 100%;
-  height: 96vh;
+  height: 88vh;
   color: white;
   overflow: hidden;
 }
 
 .banner-content {
-  position: relative;
+  /* position: relative; */
   z-index: 2;
   display: flex;
   height: 95%;
