@@ -12,27 +12,19 @@
       <div v-if="!user && !error" class="loading">Loading user details...</div>
 
       <div v-if="user" class="user-card">
-        <div class="row">
-          <div class="col-md-6 mb-3"><strong>Name:</strong> {{ user.name }}</div>
-          <div class="col-md-6 mb-3"><strong>Email:</strong> {{ user.email }}</div>
-
-          <div class="col-md-6 mb-3"><strong>Mobile Number:</strong> {{ user.mobileNumber }}</div>
-          <div class="col-md-6 mb-3"><strong>Balance:</strong> {{ user.balance }} VND</div>
-
-          <div class="col-md-6 mb-3">
+        <div class="avatar-container">
+          <img :src="getImage(user.avatar)" alt="User Avatar" class="user-avatar" />
+        </div>
+        <div class="user-info two-column pt-4">
+          <div class="info-item"><strong>Name:</strong> {{ user.name }}</div>
+          <div class="info-item"><strong>Email:</strong> {{ user.email }}</div>
+          <div class="info-item"><strong>Mobile Number:</strong> {{ user.mobileNumber }}</div>
+          <div class="info-item"><strong>Balance:</strong> {{ user.balance }} VND</div>
+          <div class="info-item">
             <strong>Status:</strong> {{ user.statusDelete === 1 ? 'Active' : 'Deleted' }}
           </div>
-          <div class="col-md-6 mb-3">
-            <strong>Created At:</strong> {{ formatDate(user.createdAt) }}
-          </div>
-
-          <div class="col-md-6 mb-3"><strong>Roles:</strong> {{ user.roleIds.join(', ') }}</div>
-
-          <div class="col-md-6 mb-3">
-            <strong>Avatar:</strong>
-            <br />
-            <img :src="getImage(user.avatar)" alt="User Avatar" class="user-avatar" />
-          </div>
+          <div class="info-item"><strong>Created At:</strong> {{ formatDate(user.createdAt) }}</div>
+          <div class="info-item"><strong>Roles:</strong> {{ user.roleIds.join(', ') }}</div>
         </div>
       </div>
     </div>
@@ -100,6 +92,30 @@ export default {
   margin-top: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
+
+.avatar-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.user-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 12px 40px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+}
+
+.info-item strong {
+  color: #007bff;
+  width: 120px;
+  flex-shrink: 0;
+}
+
 .user-detail {
   padding: 50px;
   margin: 0 20px 0 0;

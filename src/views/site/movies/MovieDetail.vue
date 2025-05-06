@@ -20,26 +20,7 @@
     <MovieEpisode :episodes="episodes" />
 
     <!-- Comments Section -->
-    <div class="card text-dark mt-4 p-3">
-      <h3>Bình luận</h3>
-      <div v-for="(comment, index) in comments" :key="index" class="mb-3 border p-2">
-        <div class="d-flex align-items-start">
-          <!-- Avatar Image -->
-          <img
-            :src="getImage(comment.userAvatar)"
-            alt="Avatar"
-            class="img-fluid comment-avatar me-2 mt-2"
-          />
-
-          <!-- Comment Content -->
-          <div class="comment-content">
-            <p class="fs-5">{{ comment.userName }}</p>
-            <p>{{ comment.content }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <CommentMovie :movie="movie" />
     <!-- Recommended Movies Section -->
     <div class="card text-dark mt-4 p-3">
       <h3>Đề Xuất</h3>
@@ -55,11 +36,13 @@
 import { $http } from '@/plugins/http-wrapper'
 import MovieEpisode from '@/components/movies/MovieEpisode.vue'
 import MovieInfo from '@/components/movies/MovieInfo.vue'
+import CommentMovie from '@/components/movies/CommentMovie.vue'
 
 export default {
   components: {
     MovieEpisode,
     MovieInfo,
+    CommentMovie,
   },
   data() {
     return {
@@ -70,6 +53,7 @@ export default {
       loading: false,
       error: null,
       seasons: [],
+      newCommentContent: '',
     }
   },
 
@@ -79,7 +63,6 @@ export default {
       handler: async function (newSlug, oldSlug) {
         if (newSlug !== oldSlug) {
           await this.fetchMovie()
-          this.fetchComments()
           this.fetchEpisode()
         }
       },
@@ -115,7 +98,6 @@ export default {
           const res = await $http.get(`/movie/slug/${movieId}`)
           if (res) {
             this.movie = res
-            console.log('Movie data fetched:', this.movie)
             this.fetchSeasons(this.movie.parent_id || this.movie.parentID)
           } else {
             this.error = 'Movie not found'
@@ -160,19 +142,6 @@ export default {
         }
       } catch (error) {
         console.error('Error fetching seasons and episodes:', error.message)
-      }
-    },
-
-    // action fetch Comment
-    async fetchComments() {
-      try {
-        let movieId = this.$route.params.slug
-        const comemntsRes = await $http.get(`/comments/movie/slug/${movieId}`)
-        if (comemntsRes) {
-          this.comments = comemntsRes
-        }
-      } catch (error) {
-        console.error('Error fetching episodes:', error.message)
       }
     },
   },
@@ -262,25 +231,6 @@ export default {
   border-radius: 5px;
   /* Rounded corners */
   line-height: 1.5;
-}
-
-.comment-avatar {
-  width: 70px;
-  /* Set avatar size */
-  height: 70px;
-  border-radius: 50%;
-  /* Make it round */
-  object-fit: cover;
-  /* Ensure it covers the area */
-}
-
-.comment-content {
-  flex: 1;
-  /* Take remaining space */
-  background: rgba(0, 0, 0, 0.05);
-  /* Light background */
-  padding: 10px;
-  border-radius: 5px;
 }
 
 .movie-image {

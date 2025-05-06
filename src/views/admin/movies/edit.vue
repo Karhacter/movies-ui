@@ -101,30 +101,65 @@
         <div v-if="errors.rating" class="text-danger mt-1">{{ errors.rating }}</div>
       </div>
 
-      <div class="mb-3">
-        <label for="poster" class="form-label">Poster Image</label>
+      <div class="mb-3 d-flex align-items-center">
+        <div style="flex-grow: 1">
+          <label for="poster" class="form-label">Poster Image</label>
+          <input
+            type="file"
+            id="poster"
+            @change="handleFileChange"
+            class="form-control"
+            accept="image/*"
+          />
+          <div v-if="posterPreview" class="mt-2">
+            <strong>Selected Poster Preview:</strong><br />
+            <img
+              :src="posterPreview"
+              alt="Selected Poster Preview"
+              style="max-width: 200px; border-radius: 8px"
+            />
+          </div>
+          <div v-else-if="currentPoster" class="mt-2">
+            <strong>Current Poster:</strong><br />
+            <img
+              :src="getImage(currentPoster)"
+              alt="Current Poster"
+              style="max-width: 200px; border-radius: 8px"
+            />
+          </div>
+          <div class="ms-3" style="margin-top: 32px">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              @click="showGalleryInput = !showGalleryInput"
+            >
+              {{ showGalleryInput ? 'Hide Gallery Images' : 'Add More' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="showGalleryInput" class="mb-3">
+        <label for="gallery" class="form-label">Add Gallery Images</label>
         <input
           type="file"
-          id="poster"
-          @change="handleFileChange"
+          id="gallery"
+          @change="handleGalleryFilesChange"
           class="form-control"
           accept="image/*"
+          multiple
         />
-        <div v-if="posterPreview" class="mt-2">
-          <strong>Selected Poster Preview:</strong><br />
-          <img
-            :src="posterPreview"
-            alt="Selected Poster Preview"
-            style="max-width: 200px; border-radius: 8px"
-          />
-        </div>
-        <div v-else-if="currentPoster" class="mt-2">
-          <strong>Current Poster:</strong><br />
-          <img
-            :src="getImage(currentPoster)"
-            alt="Current Poster"
-            style="max-width: 200px; border-radius: 8px"
-          />
+        <div class="gallery-preview" v-if="galleryPreviews.length > 0">
+          <div v-for="(src, index) in galleryPreviews" :key="index" class="position-relative">
+            <img :src="src" alt="Gallery Image Preview" />
+            <button
+              type="button"
+              class="btn btn-sm btn-danger position-absolute top-0 end-0"
+              @click="removeGalleryImage(index)"
+            >
+              ×
+            </button>
+          </div>
         </div>
       </div>
 
@@ -157,9 +192,27 @@ const movie = reactive({
   rating: '',
   tokens: 0,
 })
+
 const currentPoster = ref(null)
 const posterFile = ref(null)
 const posterPreview = ref(null)
+const galleryFiles = ref([])
+const galleryPreviews = ref([])
+
+const selectedImage = ref(null)
+const updateMessage = ref('')
+const updateSuccess = ref(false)
+
+function handleGalleryFilesChange(event) {
+  const files = Array.from(event.target.files)
+  galleryFiles.value = galleryFiles.value.concat(files)
+  galleryPreviews.value = galleryFiles.value.map((file) => URL.createObjectURL(file))
+}
+
+function removeGalleryImage(index) {
+  galleryFiles.value.splice(index, 1)
+  galleryPreviews.value.splice(index, 1)
+}
 
 async function fetchCategories() {
   try {
@@ -188,6 +241,10 @@ async function fetchMovieDetail() {
       movie.rating = res.rating
       movie.tokens = res.tokens || 0
       currentPoster.value = res.image || null
+      selectedImage.value = res.image || null
+      if (res.galleryImages && res.galleryImages.length > 0) {
+        galleryPreviews.value = res.galleryImages.map((img) => getImage(img))
+      }
     }
   } catch (e) {
     errors.general = 'Failed to load movie details: ' + e.message
@@ -203,6 +260,11 @@ function handleFileChange(event) {
     }
     posterPreview.value = URL.createObjectURL(file)
   }
+}
+
+const selectImage = (img) => {
+  selectedImage.value = img
+  updateMessage.value = ''
 }
 
 async function handleSubmit() {
@@ -289,6 +351,17 @@ async function handleSubmit() {
         'Content-Type': 'multipart/form-data',
       },
     })
+    if (galleryFiles.value.length > 0) {
+      const galleryFormData = new FormData()
+      galleryFiles.value.forEach((file) => {
+        galleryFormData.append('files', file)
+      })
+      await $http.post(`/movies/images/${movie.id}/gallery`, galleryFormData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+    }
     alert('Movie updated successfully!')
     router.push({ name: 'AdminListMovie' })
   } catch (error) {
@@ -304,6 +377,8 @@ onMounted(() => {
   fetchCategories()
   fetchMovieDetail()
 })
+
+const showGalleryInput = ref(false)
 
 function getImage(imageName) {
   if (!imageName) return ''
@@ -322,5 +397,39 @@ function getImage(imageName) {
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
+}
+.gallery-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+.gallery-preview img {
+  max-width: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+  height: 200px;
+}
+.gallery-images {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.gallery-image {
+  width: 100px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+.gallery-image:hover {
+  transform: scale(1.1);
+}
+.gallery-image.selected {
+  border: 3px solid #007bff;
+  transform: scale(1.1);
 }
 </style>

@@ -33,7 +33,23 @@
                   :src="getImage(img)"
                   alt="Gallery Image"
                   class="gallery-image"
+                  :class="{ selected: selectedImage === img }"
+                  @click="selectImage(img)"
                 />
+              </div>
+              <button
+                class="btn btn-primary mt-3"
+                :disabled="!selectedImage"
+                @click="updateMainImage"
+              >
+                Update Main Image
+              </button>
+              <div
+                v-if="updateMessage"
+                :class="{ 'text-success': updateSuccess, 'text-danger': !updateSuccess }"
+                class="mt-2"
+              >
+                {{ updateMessage }}
               </div>
             </div>
 
@@ -66,6 +82,9 @@ export default {
     const movieId = route.params.id
     const movie = ref(null)
     const error = ref(null)
+    const selectedImage = ref(null)
+    const updateMessage = ref('')
+    const updateSuccess = ref(false)
 
     const fetchMovie = async () => {
       console.log('Fetching movie detail for ID:', movieId)
@@ -77,6 +96,33 @@ export default {
       } catch (err) {
         console.error('Error fetching movie detail:', err)
         error.value = 'Failed to load movie details.'
+      }
+    }
+
+    const selectImage = (img) => {
+      selectedImage.value = img
+      updateMessage.value = ''
+    }
+
+    const updateMainImage = async () => {
+      if (!selectedImage.value) {
+        updateMessage.value = 'Please select an image from the gallery.'
+        updateSuccess.value = false
+        return
+      }
+      try {
+        updateMessage.value = ''
+        // Send imageUrl as query parameter instead of request body
+        const response = await $http.post(
+          `/movies/images/${movieId}/main-image?imageUrl=${encodeURIComponent(selectedImage.value)}`
+        )
+        movie.value.image = selectedImage.value
+        updateMessage.value = 'Main image updated successfully.'
+        updateSuccess.value = true
+      } catch (err) {
+        console.error('Error updating main image:', err)
+        updateMessage.value = 'Failed to update main image.'
+        updateSuccess.value = false
       }
     }
 
@@ -93,6 +139,11 @@ export default {
       movie,
       error,
       formatDate,
+      selectedImage,
+      updateMessage,
+      updateSuccess,
+      selectImage,
+      updateMainImage,
     }
   },
 }
@@ -189,9 +240,15 @@ export default {
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s ease;
+  cursor: pointer;
 }
 
 .gallery-image:hover {
+  transform: scale(1.1);
+}
+
+.gallery-image.selected {
+  border: 3px solid #007bff;
   transform: scale(1.1);
 }
 

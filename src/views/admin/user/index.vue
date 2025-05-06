@@ -72,6 +72,24 @@
             </tr>
           </tbody>
         </table>
+        <div v-if="loading" class="text-center text-primary my-3">Loading movies...</div>
+        <div class="pagination-controls" style="padding: 10px; text-align: center">
+          <button
+            class="btn btn-sm btn-primary me-2"
+            :disabled="currentPage === 0 || loading"
+            @click="goToPage(currentPage - 1)"
+          >
+            Previous
+          </button>
+          <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+          <button
+            class="btn btn-sm btn-primary ms-2"
+            :disabled="currentPage === totalPages - 1 || loading"
+            @click="goToPage(currentPage + 1)"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </section>
   </div>
@@ -85,22 +103,39 @@ export default {
   data() {
     return {
       users: [],
+      currentPage: 0,
+      pageSize: 10,
+      totalPages: 0,
+      loading: false,
     }
   },
   methods: {
     getImage(imageName) {
-      return `http://localhost:8080${imageName}`
+      if (!imageName) return ''
+      return `http://localhost:8080${imageName.startsWith('/') ? '' : '/'}${imageName}`
     },
-    async fetchUser() {
+    async fetchUser(page = 0) {
+      if (this.loading) return
       try {
-        const res = await $http.get('/users/index')
-        if (res) {
-          this.users = res
+        this.loading = true
+        const queryParams = `?page=${page}&size=${this.pageSize}`
+        console.log('Fetching users with query:', queryParams)
+        const res = await $http.get('/users/page' + queryParams)
+        console.log('Response from users/page:', res)
+        if (res && res.content) {
+          this.users = res.content
+          this.totalPages = res.totalPages
+          this.currentPage = page
+        } else {
+          console.error('Unexpected response structure:', res)
         }
       } catch (e) {
-        console.error('Error fetching users:', e.message)
+        console.error('Error fetching movies:', e)
+      } finally {
+        this.loading = false
       }
     },
+
     async deleteMovie(id) {
       try {
         // Soft delete: set statusDelete to 1
@@ -110,6 +145,11 @@ export default {
         }
       } catch (error) {
         console.error('Failed to soft delete user:', error)
+      }
+    },
+    goToPage(page) {
+      if (page >= 0 && page < this.totalPages) {
+        this.fetchMovies(page)
       }
     },
   },

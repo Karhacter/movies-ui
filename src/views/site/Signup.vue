@@ -5,17 +5,17 @@
 
       <form @submit.prevent="handleSubmit" class="login-form">
         <div class="input-group">
-          <input type="text" v-model="name" placeholder="Full Name" required />
+          <input type="text" v-model="user.name" placeholder="Full Name" required />
         </div>
 
         <div class="input-group">
-          <input type="email" v-model="email" placeholder="Email" required />
+          <input type="email" v-model="user.email" placeholder="Email" required />
         </div>
 
         <div class="input-group">
           <input
             :type="showPassword ? 'text' : 'password'"
-            v-model="password"
+            v-model="user.password"
             placeholder="Password"
             required
           />
@@ -63,7 +63,86 @@
   </div>
 </template>
 
-<script></script>
+<script setup>
+import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { $http } from '@/plugins/http-wrapper'
+
+const router = useRouter()
+const errors = reactive({})
+const user = reactive({
+  name: '',
+  email: '',
+  password: '',
+})
+const confirmPassword = ref('')
+
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+
+async function handleSubmit() {
+  // Clear previous errors
+  Object.keys(errors).forEach((key) => delete errors[key])
+
+  let hasError = false
+  if (!user.name) {
+    errors.name = 'Name is required.'
+    hasError = true
+  }
+  if (!user.email) {
+    errors.email = 'Email is required.'
+    hasError = true
+  }
+  if (!user.password) {
+    errors.password = 'Password is required.'
+    hasError = true
+  }
+  if (!confirmPassword.value) {
+    errors.confirmPassword = 'Confirm Password is required.'
+    hasError = true
+  }
+  if (user.password !== confirmPassword.value) {
+    errors.confirmPassword = 'Passwords do not match.'
+    hasError = true
+  }
+  if (hasError) return
+
+  const userDTO = {
+    name: user.name,
+    email: user.email,
+    password: user.password,
+  }
+
+  const formData = new FormData()
+  const userBlob = new Blob([JSON.stringify(userDTO)], { type: 'application/json' })
+  formData.append('userDTO', userBlob, '') // Append with empty filename
+
+  // Debug log FormData contents
+  for (const pair of formData.entries()) {
+    console.log(pair[0] + ':', pair[1])
+  }
+
+  try {
+    const savedUser = await $http.post('/users/register', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    alert('User created successfully!')
+    router.push({ name: 'UserList' }) // make sure this route exists
+  } catch (error) {
+    // Check if error response indicates email already exists
+    if (error.response && error.response.data && error.response.data.message) {
+      const msg = error.response.data.message.toLowerCase()
+      if (msg.includes('email') && msg.includes('exist')) {
+        errors.email = 'Email already exists.'
+        return
+      }
+    }
+    errors.general = 'Failed to create user: ' + error.message
+  }
+}
+</script>
 
 <style scoped>
 .login-container {

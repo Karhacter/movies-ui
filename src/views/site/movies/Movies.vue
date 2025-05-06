@@ -8,8 +8,6 @@
         <div v-if="loading" class="text-center text-white">Loading...</div>
 
         <div v-else>
-          <MovieSearch @search="handleSearch" @sort="handleSort" />
-
           <div class="row ms-1" id="movies">
             <div
               class="col-md-3 col-sm-3 col-xs-6 grid-item mb-4 ps-0"
@@ -30,7 +28,7 @@
       </div>
 
       <!-- Section Left (20%) -->
-      <MovieSidebar :movie="topMovies" />
+      <MovieSidebar />
     </div>
   </div>
 </template>
@@ -41,7 +39,6 @@ import { useRoute, useRouter } from 'vue-router'
 import MovieCard from '@/components/movies/MovieCard.vue'
 import MoviePagination from '@/components/movies/MoviePagination.vue'
 import MovieSidebar from '@/components/movies/MovieSidebar.vue'
-import MovieSearch from '@/components/movies/MovieSearch.vue'
 import { $http } from '@/plugins/http-wrapper'
 
 export default defineComponent({
@@ -50,7 +47,6 @@ export default defineComponent({
     MovieCard,
     MoviePagination,
     MovieSidebar,
-    MovieSearch,
   },
   data() {
     return {
@@ -60,9 +56,6 @@ export default defineComponent({
       currentPage: 0,
       totalPages: 0,
       pageSize: 10,
-      sortBy: 'rating',
-      sortOrder: 'desc',
-      searchQuery: '',
       pageCache: new Map(),
       pageChangeTimeout: null,
     }
@@ -93,7 +86,7 @@ export default defineComponent({
           search: this.searchQuery,
         }
 
-        const response = await $http.get('/movies/index', params)
+        const response = await $http.get('/movies/search', params)
 
         if (response && response.content) {
           this.movies = response.content
@@ -151,6 +144,13 @@ export default defineComponent({
           this.fetchMovies()
         }
       },
+    },
+    '$route.query.search': {
+      handler(newSearch) {
+        this.searchQuery = newSearch || ''
+        this.resetAndFetch()
+      },
+      immediate: true,
     },
   },
   mounted() {
