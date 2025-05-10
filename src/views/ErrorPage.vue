@@ -23,7 +23,7 @@
         </ul>
       </div>
 
-      <router-link to="/" class="home-button">
+      <router-link to="/login" class="home-button">
         <i class="fas fa-home"></i>
         Về trang chủ
       </router-link>

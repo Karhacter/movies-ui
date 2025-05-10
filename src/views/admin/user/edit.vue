@@ -209,7 +209,16 @@ async function handleSubmit() {
     alert('User updated successfully!')
     router.push({ name: 'UserList' })
   } catch (error) {
-    errors.general = 'Failed to update user: ' + error.message
+    console.log('Error response data:', error.response ? error.response.data : error)
+    // Check if error response indicates email already exists
+    const errorData = error.response && error.response.data
+    const msg = ((errorData && (errorData.message || errorData.error)) || '').toLowerCase()
+    if (msg.includes('email') && msg.includes('exist')) {
+      errors.email = 'Email already exists.'
+      errors.general = ''
+    } else {
+      errors.general = msg || 'Failed to update user. Please try again later.'
+    }
   }
 }
 

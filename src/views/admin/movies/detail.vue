@@ -52,11 +52,6 @@
                 {{ updateMessage }}
               </div>
             </div>
-
-            <div v-if="movie.videoUrl" class="video-player">
-              <strong>Video:</strong>
-              <video controls :src="movie.videoUrl" class="movie-video"></video>
-            </div>
           </div>
         </div>
       </div>

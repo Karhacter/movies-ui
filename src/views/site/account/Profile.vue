@@ -64,27 +64,6 @@
         </div>
       </div>
     </div>
-    <div v-if="showPasswordModal" class="modal-overlay">
-      <div class="modal-content">
-        <h4>Đổi mật khẩu</h4>
-        <div class="form-group">
-          <label>Mật khẩu hiện tại</label>
-          <input v-model="passwordForm.current" type="password" class="form-control" />
-        </div>
-        <div class="form-group">
-          <label>Mật khẩu mới</label>
-          <input v-model="passwordForm.new" type="password" class="form-control" />
-        </div>
-        <div class="form-group">
-          <label>Xác nhận mật khẩu</label>
-          <input v-model="passwordForm.confirm" type="password" class="form-control" />
-        </div>
-        <div class="modal-actions">
-          <button class="btn btn-primary" @click="updatePassword">Xác nhận</button>
-          <button class="btn btn-outline-secondary" @click="showPasswordModal = false">Hủy</button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -141,7 +120,7 @@ export default {
     },
 
     changePassword() {
-      alert('Change password functionality would go here')
+      this.$router.push({ name: 'changepassword' })
     },
 
     triggerFileInput() {

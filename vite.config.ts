@@ -9,6 +9,18 @@ export default defineConfig({
   server: {
     port: 5173,
     host: 'localhost',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/oauth2': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   plugins: [vue(), vueDevTools()],
   resolve: {

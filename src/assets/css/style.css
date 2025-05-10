@@ -2,7 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Ubuntu", sans-serif;
+  font-family: 'Ubuntu', sans-serif;
 }
 body {
   background: black;
@@ -16,7 +16,7 @@ body {
 /* Navbar Css  */
 #header-nav .nav-link {
   color: white;
-  font-size: 20px;
+  font-size: 17px;
   margin-left: 20px;
 }
 
@@ -177,7 +177,7 @@ img:hover {
 
 .slider::before,
 .slider::after {
-  content: "";
+  content: '';
   height: 100%;
   position: absolute;
   width: 15%;
@@ -214,10 +214,11 @@ img:hover {
   color: white;
   width: 100%;
 }
-.hr {
-  width: 95%;
-  height: 2px;
-  color: black;
+
+.footer-hr {
+  border: 0.5px solid #fff; /* Adjust as needed */
+  margin: 10px 0;
+  opacity: 0.2;
 }
 
 .maincontainer h2 {
@@ -281,7 +282,7 @@ img:hover {
 }
 /* Contact Us CSS starts*/
 .box {
-  background: url("https://cdn.pixabay.com/photo/2017/09/17/08/39/curtain-2757815_960_720.png")
+  background: url('https://cdn.pixabay.com/photo/2017/09/17/08/39/curtain-2757815_960_720.png')
     no-repeat center center/cover;
   color: white;
   text-align: center;
@@ -541,7 +542,7 @@ textarea.ng-valid {
 
 .fill .form-group .underline::before {
   position: absolute;
-  content: "";
+  content: '';
   height: 2px;
   width: 100%;
   background: #e71328;
@@ -577,7 +578,9 @@ textarea.ng-valid {
   border-radius: 0.25rem;
 }
 .fill .sm-button:hover {
-  box-shadow: 0 0 10px rgba(231, 19, 40, 0.7), 0 0 15px rgba(231, 19, 40, 0.7),
+  box-shadow:
+    0 0 10px rgba(231, 19, 40, 0.7),
+    0 0 15px rgba(231, 19, 40, 0.7),
     0 0 20px rgba(231, 19, 40, 0.7);
   transition: 0.3s box-shadow;
   -webkit-transition: 0.3s box-shadow;

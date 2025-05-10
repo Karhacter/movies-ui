@@ -69,7 +69,9 @@
             <p>Bank Name: Example Bank</p>
             <p>Account Number: 123456789</p>
             <p>Account Holder: Your Company Name</p>
-            <p>Please transfer the amount to the above account and use your User ID as the reference.</p>
+            <p>
+              Please transfer the amount to the above account and use your User ID as the reference.
+            </p>
           </div>
         </div>
 
@@ -95,19 +97,19 @@
                 v-if="selectedPackageName.toLowerCase() === 'basic'"
                 src="@/assets/img/basic.jpg"
                 alt="Basic QR Code"
-                style="max-width: 200px; margin: 10px auto;"
+                style="max-width: 200px; margin: 10px auto"
               />
               <img
                 v-else-if="selectedPackageName.toLowerCase() === 'standard'"
                 src="@/assets/img/standard.jpg"
                 alt="Standard QR Code"
-                style="max-width: 200px; margin: 10px auto;"
+                style="max-width: 200px; margin: 10px auto"
               />
               <img
                 v-else-if="selectedPackageName.toLowerCase() === 'premium'"
                 src="@/assets/img/premium.jpg"
                 alt="Premium QR Code"
-                style="max-width: 200px; margin: 10px auto;"
+                style="max-width: 200px; margin: 10px auto"
               />
               <p v-else>No QR code available for this package.</p>
             </div>
@@ -210,11 +212,7 @@ export default {
       }
       // Validate payment method specific fields
       if (this.paymentMethod === 'CREDIT_CARD') {
-        if (
-          !this.creditCard.cardNumber ||
-          !this.creditCard.expiryDate ||
-          !this.creditCard.cvv
-        ) {
+        if (!this.creditCard.cardNumber || !this.creditCard.expiryDate || !this.creditCard.cvv) {
           alert('Please fill in all credit card details.')
           return
         }

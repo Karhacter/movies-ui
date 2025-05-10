@@ -17,7 +17,7 @@
         </div>
       </div>
     </div>
-    <MovieEpisode :episodes="episodes" />
+    <MovieEpisode :episodes="episodes" :slug="movie.slug" />
 
     <!-- Comments Section -->
     <CommentMovie :movie="movie" />
@@ -94,7 +94,6 @@ export default {
           }
         } else {
           let movieId = this.$route.params.slug
-          console.log('Fetching movie with slug:', movieId)
           const res = await $http.get(`/movie/slug/${movieId}`)
           if (res) {
             this.movie = res

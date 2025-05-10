@@ -57,7 +57,7 @@
           <select id="role" v-model="selectedRole" class="form-select" required>
             <option value="" disabled>Select a role</option>
             <option v-for="role in roles" :key="role.role_id" :value="role.roleStatus">
-              {{ role.roleName }}
+              {{ role.roleStatus }} - {{ role.roleName }}
             </option>
           </select>
           <div v-if="errors.role" class="text-danger mt-1">{{ errors.role }}</div>
@@ -183,6 +183,14 @@ async function handleSubmit() {
     alert('User created successfully!')
     router.push({ name: 'UserList' }) // make sure this route exists
   } catch (error) {
+    // Check if error response indicates email already exists
+    if (error.response && error.response.data && error.response.data.message) {
+      const msg = error.response.data.message.toLowerCase()
+      if (msg.includes('email') && msg.includes('exist')) {
+        errors.email = 'Email already exists.'
+        return
+      }
+    }
     errors.general = 'Failed to create user: ' + error.message
   }
 }

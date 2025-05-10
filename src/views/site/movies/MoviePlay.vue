@@ -5,97 +5,161 @@
       Your browser does not support the video tag.
     </video>
 
-    <div class="controls">
-      <button @click="togglePlay" class="btn btn-primary">
-        {{ isPlaying ? 'Pause' : 'Play' }}
-      </button>
-      <button @click="toggleFullscreen" class="btn btn-secondary">Fullscreen</button>
-    </div>
-
     <div class="extra-controls">
       <button class="btn btn-no-ads"><i class="fa fa-ban" aria-hidden="true"></i> Ads</button>
-      <button class="btn btn-download"><i class="fa fa-download"></i> Tải Phim</button>
-      <button class="btn btn-next-episode"><i class="fa fa-arrow-right"></i> Tập tiếp theo</button>
+      <!-- <button class="btn btn-download"><i class="fa fa-download"></i> Tải Phim</button> -->
+      <button class="btn btn-next-episode" @click="nextEpisode">
+        <i class="fa fa-arrow-right"></i> Tập tiếp theo
+      </button>
+    </div>
+    <div class="container">
+      <MovieEpisode :episodes="episodes" :slug="movie.slug" />
     </div>
 
     <div class="comments-section">
-      <h3>Comments</h3>
-      <p>Comments will appear here.</p>
+      <CommentMovie :movie="movie" />
     </div>
   </div>
 </template>
 
 <script>
 import Hls from 'hls.js'
+import { $http } from '@/plugins/http-wrapper'
+import MovieEpisode from '@/components/movies/MovieEpisode.vue'
+import CommentMovie from '@/components/movies/CommentMovie.vue'
 
 export default {
-  props: {
-    videoSrc: {
-      type: String,
-      required: true,
-    },
+  components: {
+    MovieEpisode,
+    CommentMovie,
   },
   data() {
     return {
+      movie: {},
+      episodes: [],
       isPlaying: false,
       hls: null,
       isHls: false,
+      videoSrc: '',
+      baseUrl: 'http://localhost:8080',
     }
   },
-  mounted() {
-    const video = this.$refs.videoPlayer
-    this.isHls = this.videoSrc.endsWith('.m3u8')
-
-    if (this.isHls) {
-      if (Hls.isSupported()) {
-        this.hls = new Hls()
-        this.hls.loadSource(this.videoSrc)
-        this.hls.attachMedia(video)
-        this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          video.play()
-          this.isPlaying = true
-        })
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = this.videoSrc
-        video.addEventListener('loadedmetadata', () => {
-          video.play()
-          this.isPlaying = true
-        })
+  async mounted() {
+    this.loadEpisode()
+    this.fetchEpisode()
+    await this.fetchMovie()
+    this.fetchEpisode()
+  },
+  watch: {
+    '$route.params.id': 'loadEpisode',
+  },
+  methods: {
+    async fetchEpisode() {
+      try {
+        const resEp = await $http.get(`/episodes/movie/${this.movie.id}`)
+        if (resEp) {
+          this.episodes = resEp
+          this.totalEpisodes = resEp.length
+        }
+      } catch (error) {
+        console.error('Error fetching seasons and episodes:', error.message)
       }
-    }
+    },
+    async fetchMovie() {
+      let movieId = this.$route.params.slug
+      const res = await $http.get(`/movie/slug/${movieId}`)
+      if (res) {
+        this.movie = res
+      } else {
+        this.error = 'Movie not found'
+        console.error('Movie not found for slug:', movieId)
+      }
+    },
+
+    async loadEpisode() {
+      const epId = this.$route.params.id
+      if (!epId) {
+        this.videoSrc = ''
+        return
+      }
+      try {
+        const res = await $http.get(`/episodes/${epId}`)
+        if (res && res.videoUrl) {
+          this.videoSrc = this.baseUrl + res.videoUrl
+          this.setupVideoPlayer()
+        } else {
+          this.videoSrc = ''
+          console.error('Episode video URL not found')
+        }
+      } catch (error) {
+        this.videoSrc = ''
+        console.error('Error fetching episode details:', error.message)
+      }
+    },
+
+    setupVideoPlayer() {
+      const video = this.$refs.videoPlayer
+      this.isHls = this.videoSrc.endsWith('.m3u8')
+
+      if (this.hls) {
+        this.hls.destroy()
+        this.hls = null
+      }
+
+      if (this.isHls) {
+        if (Hls.isSupported()) {
+          this.hls = new Hls()
+          this.hls.loadSource(this.videoSrc)
+          this.hls.attachMedia(video)
+          this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play()
+            this.isPlaying = true
+          })
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = this.videoSrc
+          video.addEventListener('loadedmetadata', () => {
+            video.play()
+            this.isPlaying = true
+          })
+        }
+      } else {
+        video.src = this.videoSrc
+      }
+    },
+
+    async nextEpisode() {
+      const currentEp = parseInt(this.$route.params.id)
+      const movieSlug = this.$route.params.slug
+      if (!movieSlug) {
+        alert('Movie slug not found')
+        return
+      }
+      try {
+        const res = await $http.get(`/episodes/movie/slug/${movieSlug}`)
+        if (!Array.isArray(res)) {
+          alert('Invalid episodes data')
+          return
+        }
+        const totalEpisodes = res.length
+        const nextEp = currentEp + 1
+        if (nextEp > totalEpisodes) {
+          alert('Phim Này Đã Hết Tập Để PLay')
+          return
+        }
+        this.$router.push({ name: 'movie-play', params: { slug: movieSlug, id: `${nextEp}` } })
+      } catch (error) {
+        alert('Error fetching episodes list')
+        console.error(error)
+      }
+    },
   },
   beforeUnmount() {
     if (this.hls) {
       this.hls.destroy()
     }
   },
-  methods: {
-    togglePlay() {
-      const video = this.$refs.videoPlayer
-      if (video.paused) {
-        video.play()
-        this.isPlaying = true
-      } else {
-        video.pause()
-        this.isPlaying = false
-      }
-    },
-    toggleFullscreen() {
-      const video = this.$refs.videoPlayer
-      if (video.requestFullscreen) {
-        video.requestFullscreen()
-      } else if (video.mozRequestFullScreen) {
-        video.mozRequestFullScreen()
-      } else if (video.webkitRequestFullscreen) {
-        video.webkitRequestFullscreen()
-      } else if (video.msRequestFullscreen) {
-        video.msRequestFullscreen()
-      }
-    },
-  },
 }
 </script>
-
 <style scoped>
 .video-container {
   max-width: 1200px;
@@ -113,14 +177,6 @@ export default {
   background-color: #333;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
-
-.controls {
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
 button {
   padding: 10px 15px;
   border-radius: 5px;

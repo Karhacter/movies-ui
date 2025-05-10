@@ -45,10 +45,7 @@
         <div class="divider">
           <span>OR</span>
         </div>
-
-        <div class="help-text">
-          <a href="#" class="help-link">Need help?</a>
-        </div>
+        <SocialLoginButtons />
 
         <div class="signup-text">
           Already have an account? <router-link to="/login">Sign in now.</router-link>
@@ -67,6 +64,7 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { $http } from '@/plugins/http-wrapper'
+import SocialLoginButtons from '@/components/Login/SocialLoginButtons.vue'
 
 const router = useRouter()
 const errors = reactive({})

@@ -4,14 +4,9 @@
       <div class="col-md-3">
         <img :src="getImage(movie.image)" class="img-fluid w-100 movie-image" alt="Movie Poster" />
 
-        <router-link
-          :to="`/movie/play/${movie.id}`"
-          class="btn btn-primary mt-3"
-          href="#"
-          role="button"
-        >
+        <button class="btn btn-primary mt-3" role="button" @click="playMovie">
           <i class="fa fa-play fa-3x" style="height: 40px; width: 40px"></i>
-        </router-link>
+        </button>
         <button
           v-if="!inWatchlist"
           class="btn btn-success mt-3 ms-2 pb-2"
@@ -32,31 +27,31 @@
       </div>
       <div class="col-md-9">
         <div class="row">
-        <h3 class="col">{{ movie.title }}</h3>
+          <h3 class="col">{{ movie.title }}</h3>
 
-        <div class="col-md-3 d-flex align-items-center justify-content-end">
-          <button class="btn btn-warning" @click="showRatingModal = true">Đánh giá</button>
+          <div class="col-md-3 d-flex align-items-center justify-content-end">
+            <button class="btn btn-warning" @click="showRatingModal = true">Đánh giá</button>
+          </div>
         </div>
-      </div>
-      <p>
-        <span
-          v-for="category in movie.categories"
-          :key="category.id"
-          class="badge bg-primary me-1"
-        >
-          {{ category.name }}
-        </span>
-      </p>
-      <p><strong>Trạng thái:</strong> {{ movie.status || 'Đang tiến hành' }}</p>
-      <p><strong>Season:</strong> {{ movie.season_number || movie.seasonNumber || 'N/A' }}</p>
-      <p><strong>Điểm:</strong> {{ movie.rating }} / 10</p>
-      <p><strong>Phát hành:</strong> {{ movie.year || 2024 }}</p>
-      <p><strong>Thời lượng:</strong> {{ totalEpisodes }} tập</p>
+        <p>
+          <span
+            v-for="category in movie.categories"
+            :key="category.id"
+            class="badge bg-primary me-1"
+          >
+            {{ category.name }}
+          </span>
+        </p>
+        <p><strong>Trạng thái:</strong> {{ movie.status || 'Đang tiến hành' }}</p>
+        <p><strong>Season:</strong> {{ movie.season_number || movie.seasonNumber || 'N/A' }}</p>
+        <p><strong>Điểm:</strong> {{ movie.rating }} / 10</p>
+        <p><strong>Phát hành:</strong> {{ movie.year || 2024 }}</p>
+        <p><strong>Thời lượng:</strong> {{ totalEpisodes }} tập</p>
 
-      <strong>Mô tả:</strong>
-      <p class="movie-description">
-        {{ movie.description || 'Không có mô tả.' }}
-      </p>
+        <strong>Mô tả:</strong>
+        <p class="movie-description">
+          {{ movie.description || 'Không có mô tả.' }}
+        </p>
       </div>
     </div>
   </div>
@@ -86,7 +81,6 @@
 
 <script>
 import { $http } from '@/plugins/http-wrapper'
-import { ref } from 'vue'
 
 export default {
   props: {
@@ -106,7 +100,16 @@ export default {
   },
   async mounted() {
     await this.fetchUserInfor()
-    await this.checkWatchlistStatus()
+  },
+  watch: {
+    movie: {
+      immediate: true,
+      handler(newMovie) {
+        if (newMovie && newMovie.id) {
+          this.checkWatchlistStatus()
+        }
+      },
+    },
   },
   methods: {
     // fetch user to get the watchlist
@@ -130,16 +133,12 @@ export default {
 
     // action to check that movie is in watchlist ?
     async checkWatchlistStatus() {
-      if (!this.userID || !this.movie?.id) {
-        console.warn('Missing userID or movieId. Skipping request.')
-        return
-      }
       try {
         const response = await $http.get('/watchlists/status', {
           userId: this.userID,
           movieId: this.movie.id,
         })
-        this.inWatchlist = response.inWatchlist ?? false
+        this.inWatchlist = response.inWatchlist
       } catch (error) {
         console.error('Failed to check watchlist status:', error.message || error)
       }
@@ -147,6 +146,10 @@ export default {
     // the action add to watchlist
 
     async addToWatchlist() {
+      if (!this.userID) {
+        alert('Vui Lòng Đăng Nhập!')
+        window.location.href = '/'
+      }
       try {
         await $http.post('/watchlists/add', {
           userId: this.userID,
@@ -155,7 +158,7 @@ export default {
         this.inWatchlist = true
         alert('Movie added to watchlist successfully!')
       } catch (error) {
-        alert(error.response?.message || 'Failed to add movie to watchlist.')
+        alert(error.response.message || 'Xin Vui Lòng Thử Lại Sau')
       }
     },
 
@@ -170,6 +173,23 @@ export default {
         alert('Movie removed from watchlist.')
       } catch (error) {
         alert(error.response?.message || 'Failed to remove movie from watchlist.')
+      }
+    },
+
+    async playMovie() {
+      if (this.userID) {
+        try {
+          await $http.post('/history/save', {
+            userId: this.userID,
+            movieId: this.movie.id,
+            watchProgress: 0,
+          })
+          this.$router.push(`/movie/play/${this.movie.slug}/ep-1`)
+        } catch (error) {
+          alert('Failed to save watch history. Please try again.')
+        }
+      } else {
+        this.$router.push(`/movie/play/${this.movie.slug}/ep-1`)
       }
     },
 

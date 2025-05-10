@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h3 class="section-title ms-5 ps-5" style="color: #ffc107; text-decoration: none">
+    <h3 class="section-title pb-5 ms-5 ps-5" style="color: #ffc107; text-decoration: none">
       Tủ Phim Đang Theo Dõi
     </h3>
     <div class="row justify-content-center">
@@ -48,7 +48,6 @@ import { useRoute, useRouter } from 'vue-router'
 import MovieCard from '@/components/movies/MovieCard.vue'
 import MoviePagination from '@/components/movies/MoviePagination.vue'
 import MovieSidebar from '@/components/movies/MovieSidebar.vue'
-import MovieSearch from '@/components/movies/MovieSearch.vue'
 import { $http } from '@/plugins/http-wrapper'
 
 export default defineComponent({
@@ -57,7 +56,6 @@ export default defineComponent({
     MovieCard,
     MoviePagination,
     MovieSidebar,
-    MovieSearch,
   },
   data() {
     return {
@@ -70,7 +68,6 @@ export default defineComponent({
       pageSize: 10,
       sortBy: 'rating',
       sortOrder: 'desc',
-      searchQuery: '',
       pageCache: new Map(),
       pageChangeTimeout: null,
       watchlistMovies: [],
@@ -102,31 +99,23 @@ export default defineComponent({
 
     async fetchWatchlist() {
       try {
-        const resWatchList = await $http.get(`/watchlists/index/${this.userID}`)
-        this.watchlist = resWatchList
-        console.log(resWatchList)
-        const movieIds = this.watchlist
-          .map((item) => {
-            if (item.resWatchList && item.resWatchList.movieId) {
-              return item.resWatchList.movieId
-            } else if (item.movieId) {
-              return item.movieId
-            } else if (item.id) {
-              return item.id
-            }
-            return null
-          })
-          .filter((id) => id !== null)
-        if (movieIds.length > 0) {
+        const resWatchList = await $http.get(`/watchlists/index/${this.userID}`, {
+          page: this.currentPage,
+          size: this.pageSize,
+        })
+        if (resWatchList && resWatchList.content) {
+          const watchlistData = resWatchList.content
+          this.totalPages = resWatchList.totalPages
+          this.watchlist = watchlistData
           const movieDetails = []
-          for (const id of movieIds) {
+          for (const item of watchlistData) {
             try {
-              const response = await $http.get(`/movie/detail/${id}`)
-              if (response) {
-                movieDetails.push(response)
+              const movieResponse = await $http.get(`/movie/detail/${item.movieId}`)
+              if (movieResponse) {
+                movieDetails.push(movieResponse)
               }
             } catch (error) {
-              console.error(`Failed to fetch movie detail for id ${id}:`, error)
+              console.error(`Failed to fetch movie detail for id ${item.movieId}:`, error)
             }
           }
           this.watchlistMovies = movieDetails

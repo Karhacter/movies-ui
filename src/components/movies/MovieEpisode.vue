@@ -3,7 +3,7 @@
     <h5 class="text-white">Danh sách tập</h5>
     <div class="episode-list">
       <div class="episode-item" v-for="episode in episodes" :key="episode.id">
-        <button class="episode-btn season-1">
+        <button class="episode-btn season-1" @click="goToEpisode(episode.episodeNumber)">
           {{ episode.episodeNumber }}
         </button>
       </div>
@@ -15,6 +15,12 @@
 export default {
   props: {
     episodes: Array,
+    slug: String,
+  },
+  methods: {
+    goToEpisode(episodeNumber) {
+      this.$router.push({ name: 'movie-play', params: { slug: this.slug, id: episodeNumber } })
+    },
   },
 }
 </script>

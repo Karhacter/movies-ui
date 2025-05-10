@@ -4,6 +4,7 @@ import axios, {
   type AxiosResponse,
   type ResponseType,
 } from 'axios'
+// import qs from 'qs'
 
 const DEFAULT_HEADERS = {
   'Content-Type': 'application/json',
@@ -58,7 +59,15 @@ export class HttpWrapper {
       baseURL,
       responseType,
       headers: { ...DEFAULT_HEADERS, ...headers },
-      withCredentials: true
+      withCredentials: true,
+      // paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'repeat' }),
+    })
+
+    // Add request interceptor to log Authorization header
+    this.$axios.interceptors.request.use((config) => {
+      console.log('Outgoing request to:', config.url)
+      console.log('Authorization header:', config.headers?.Authorization)
+      return config
     })
   }
 
@@ -119,6 +128,7 @@ export class HttpWrapper {
   }
 
   setAccessToken(token: string | null): void {
+    console.log('setAccessToken called with token:', token)
     this.accessToken = token
     if (token) {
       this.$axios.defaults.headers.common['Authorization'] = `Bearer ${token}`

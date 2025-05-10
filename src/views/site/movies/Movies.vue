@@ -51,7 +51,6 @@ export default defineComponent({
   data() {
     return {
       movies: [],
-      topMovies: [],
       loading: false,
       currentPage: 0,
       totalPages: 0,

@@ -21,12 +21,6 @@
       </div>
 
       <div class="mb-3">
-        <label for="videoUrl" class="form-label">Video URL</label>
-        <input type="text" id="videoUrl" v-model="movie.videoUrl" class="form-control" required />
-        <div v-if="errors.videoUrl" class="text-danger mt-1">{{ errors.videoUrl }}</div>
-      </div>
-
-      <div class="mb-3">
         <label for="releaseDate" class="form-label">Release Date</label>
         <input
           type="date"
@@ -174,7 +168,6 @@ const movie = reactive({
   title: '',
   description: '',
   releaseDate: '',
-  videoUrl: '',
   categoryIds: [],
   duration: '',
   parentID: '',
@@ -229,10 +222,6 @@ async function handleSubmit() {
   let hasError = false
   if (!movie.title) {
     errors.title = 'Title is required.'
-    hasError = true
-  }
-  if (!movie.videoUrl) {
-    errors.videoUrl = 'Video URL is required.'
     hasError = true
   }
   if (!movie.description) {
@@ -291,7 +280,6 @@ async function handleSubmit() {
   const formData = new FormData()
   const movieData = {
     title: movie.title,
-    videoUrl: movie.videoUrl,
     description: movie.description,
     releaseDate: movie.releaseDate,
     duration: movie.duration,

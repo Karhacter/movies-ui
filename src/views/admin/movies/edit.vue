@@ -21,12 +21,6 @@
       </div>
 
       <div class="mb-3">
-        <label for="videoUrl" class="form-label">Video URL</label>
-        <input type="text" id="videoUrl" v-model="movie.videoUrl" class="form-control" required />
-        <div v-if="errors.videoUrl" class="text-danger mt-1">{{ errors.videoUrl }}</div>
-      </div>
-
-      <div class="mb-3">
         <label for="releaseDate" class="form-label">Release Date</label>
         <input
           type="date"
@@ -185,7 +179,6 @@ const movie = reactive({
   title: '',
   description: '',
   releaseDate: '',
-  videoUrl: '',
   categoryIds: [],
   parentID: '',
   duration: '',
@@ -234,7 +227,6 @@ async function fetchMovieDetail() {
       movie.title = res.title
       movie.description = res.description
       movie.releaseDate = res.releaseDate ? res.releaseDate.split('T')[0] : ''
-      movie.videoUrl = res.videoUrl
       movie.parentID = res.parentID
       movie.categoryIds = res.categories ? res.categories.map((cat) => cat.id) : []
       movie.duration = res.duration
@@ -277,10 +269,7 @@ async function handleSubmit() {
     errors.title = 'Title is required.'
     hasError = true
   }
-  if (!movie.videoUrl) {
-    errors.videoUrl = 'Video URL is required.'
-    hasError = true
-  }
+
   if (!movie.description) {
     errors.description = 'Description is required.'
     hasError = true
@@ -331,7 +320,6 @@ async function handleSubmit() {
   const movieData = {
     id: movie.id,
     title: movie.title,
-    videoUrl: movie.videoUrl,
     description: movie.description,
     releaseDate: movie.releaseDate,
     duration: movie.duration,

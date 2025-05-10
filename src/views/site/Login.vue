@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-box">
-      <h1>Sign In</h1>
+      <h1>Đăng Nhập</h1>
 
       <form @submit.prevent="handleSubmit" class="login-form">
         <div class="input-group">
@@ -22,7 +22,7 @@
           ></i>
         </div>
 
-        <button type="submit" class="signin-button">Sign In</button>
+        <button type="submit" class="signin-button">Đăng Nhập</button>
 
         <div class="divider">
           <span>OR</span>
@@ -30,9 +30,11 @@
 
         <SocialLoginButtons />
         <div class="signup-text">
-          New to My Website? <router-link to="/signup">Sign up now.</router-link>
+          New to My Website? <router-link to="/signup">Đăng Ký.</router-link>
         </div>
-
+        <div class="signup-text">
+          Forgot Password? <router-link to="/reset-password">Quên Mật Khẩu</router-link>
+        </div>
         <div class="captcha-text">
           This page is protected by Google reCAPTCHA to ensure you're not a bot.
           <a href="#" class="learn-more">Learn more.</a>

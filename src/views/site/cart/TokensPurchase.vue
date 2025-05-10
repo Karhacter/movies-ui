@@ -57,7 +57,7 @@ export default {
     async fetchPlans() {
       try {
         const response = await $http.get('/payments/membership-packages')
-        this.plans = response
+        if (response) this.plans = response
       } catch (error) {
         alert('Failed to load membership packages.')
       }
@@ -79,6 +79,8 @@ export default {
       if (!this.userID) {
         await this.fetchUserInfor()
         if (!this.userID) {
+          alert('Vui Lòng Đăng Nhập Để Được Hưởng Lợi')
+          window.location.href = '/'
           throw new Error('Unable to get user ID')
         }
       }

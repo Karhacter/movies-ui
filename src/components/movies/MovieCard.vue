@@ -1,11 +1,11 @@
 <template>
-  <div class="card movie_card ps-1 m-1">
+  <div class="card movie_card ps-1 m-1" v-if="movie.statusDelete != 0">
     <div class="movie-image-container">
-      <img :src="movie.image" class="card-img-top" alt="Movie Poster" />
+      <img :src="getMovieImage(movie.image)" class="card-img-top" :alt="movie.image" />
       <div class="play-button-overlay">
-        <button class="play-button" @click="navigateToMovieDetail(movie.id)">
+        <router-link class="play-button" :to="`/movie/${movie.slug}`">
           <i class="fas fa-play"></i>
-        </button>
+        </router-link>
       </div>
     </div>
     <div class="card-body">
@@ -24,7 +24,9 @@ interface Movie {
   id: number
   title: string
   image: string
+  slug: string
   rating: number
+  statusDelete: number
 }
 
 defineProps<{
@@ -33,10 +35,9 @@ defineProps<{
 
 const router = useRouter()
 
-const navigateToMovieDetail = (id: number) => {
-  router.push(`/movies/${id}`)
+function getMovieImage(imageName: string): string {
+  return `http://localhost:8080${imageName}`
 }
-
 </script>
 
 <style scoped>

@@ -3,25 +3,29 @@
     <div class="banner-content">
       <div class="content-wrapper">
         <transition name="slide-fade" mode="out-in">
-          <div class="content-left" :key="currentMovie.id">
+          <div class="content-left" v-if="currentMovie" :key="currentMovie.id">
             <div class="movie-title">
               <h1>{{ currentMovie.title }}</h1>
             </div>
 
             <div class="movie-meta">
               <span class="rating"
-                >IMDb <strong>{{ currentMovie.imdbRating }}</strong></span
+                >IMDb <strong>{{ currentMovie.rating }}</strong></span
               >
-              <span class="age-rating">{{ currentMovie.ageRating }}</span>
-              <span class="year">{{ currentMovie.year }}</span>
-              <span class="episode" v-if="currentMovie.season">Phần {{ currentMovie.season }}</span>
+              <span class="year">{{ currentMovie.releaseDate }}</span>
+              <span class="episode"
+                >Phần {{ currentMovie.season_number || currentMovie.seasonNumber || 'N/A' }}</span
+              >
+
               <span class="current-episode" v-if="currentMovie.episode"
                 >Tập {{ currentMovie.episode }}</span
               >
             </div>
 
             <div class="tags">
-              <span class="tag" v-for="tag in currentMovie.tags" :key="tag">{{ tag }}</span>
+              <span v-for="category in currentMovie.categories" :key="category.id" class="tag">
+                {{ category.name }}
+              </span>
             </div>
 
             <p class="description">
@@ -29,26 +33,25 @@
             </p>
 
             <div class="controls">
-              <button class="play-btn" @click="handlePlay">
+              <button class="play-btn" @click="handlePlay(currentMovie.slug)">
                 <span class="play-icon">▶</span>
               </button>
               <button class="favorite-btn" @click="handleFavorite">
                 <span class="heart-icon">♡</span>
               </button>
-              <button class="info-btn" @click="handleInfo">
+              <button class="info-btn" @click="handleInfo(currentMovie.slug)">
                 <span class="info-icon">ⓘ</span>
               </button>
             </div>
           </div>
         </transition>
-
         <div class="thumbnails">
           <div
-            v-for="(movie, index) in movies"
+            v-for="(movie, index) in banners"
             :key="movie.id"
             class="thumbnail"
             :class="{ active: currentIndex === index }"
-            :style="{ backgroundImage: `url(${movie.thumbnail})` }"
+            :style="{ backgroundImage: `url(${getImage(movie.image)})` }"
             @click="setCurrentMovie(index)"
           ></div>
         </div>
@@ -57,7 +60,7 @@
 
       <div class="movie-poster">
         <div class="cover-img">
-          <img :src="currentMovie.backgroundImage" alt="movie poster" />
+          <img :src="getImage(currentMovie.image)" :alt="currentMovie.image" />
         </div>
       </div>
     </div>
@@ -68,96 +71,55 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import img1 from '@/assets/img/project/project1/2.jpg'
-import img2 from '@/assets/img/project/project1/1.jpg'
-import img3 from '@/assets/img/project/project1/3.jpg'
-import { ref } from 'vue'
-interface Movie {
-  id: number
-  title: string
-  imdbRating: number
-  ageRating: string
-  year: number
-  season?: number
-  episode?: number
-  tags: string[]
-  description: string
-  backgroundImage: string
-  thumbnail: string
-}
+<script>
+import { $http } from '@/plugins/http-wrapper'
 
-const movies = ref<Movie[]>([
-  {
-    id: 1,
-    title: 'DAREDEVIL',
-
-    imdbRating: 8.7,
-    ageRating: 'T18',
-    year: 2025,
-    season: 1,
-    episode: 4,
-    tags: ['Chính Kịch', 'Hình Sự', 'Siêu Anh Hùng', 'Marvel'],
-    description:
-      'Matt Murdock, một luật sư mù với khả năng đặc biệt, chiến đấu cho công lý thông qua công ty luật sắm ướt của mình. Trong khi cựu trùm mafia Wilson Fisk theo đuổi những nỗ lực chính trị của riêng mình ở New York. Khi quá khứ của họ bắt đầu lộ diện, cả hai...',
-    backgroundImage: img1,
-    thumbnail: img2,
+export default {
+  data() {
+    return {
+      banners: [],
+      currentIndex: 0,
+      currentMovie: [],
+    }
   },
-  {
-    id: 2,
-    title: 'STRANGER THINGS',
-    imdbRating: 8.9,
-    ageRating: 'T16',
-    year: 2024,
-    season: 5,
-    episode: 1,
-    tags: ['Kinh Dị', 'Viễn Tưởng', 'Phiêu Lưu'],
-    description:
-      'Hawkins đối mặt với mối đe dọa lớn nhất từ trước đến nay khi những bí mật của Upside Down được hé lộ. Nhóm bạn phải một lần nữa đoàn kết để bảo vệ thị trấn và những người họ yêu thương...',
-    backgroundImage: img2,
-    thumbnail: img1,
+  mounted() {
+    this.FetchBanner()
   },
-  {
-    id: 3,
-    title: 'STRANGER THINGS',
-    imdbRating: 8.9,
-    ageRating: 'T16',
-    year: 2024,
-    season: 5,
-    episode: 1,
-    tags: ['Kinh Dị', 'Viễn Tưởng', 'Phiêu Lưu'],
-    description:
-      'Hawkins đối mặt với mối đe dọa lớn nhất từ trước đến nay khi những bí mật của Upside Down được hé lộ. Nhóm bạn phải một lần nữa đoàn kết để bảo vệ thị trấn và những người họ yêu thương...',
-    backgroundImage: img3,
-    thumbnail: img3,
+  methods: {
+    getImage(imageName) {
+      return `http://localhost:8080${imageName}`
+    },
+    async FetchBanner() {
+      const response = await $http.get('/movies/top-new', { limit: 5 })
+      if (response) {
+        this.banners = response
+        this.currentMovie = this.banners[0]
+        console.log('Movies fetched:', this.banners)
+      } else {
+        console.warn('No movies found in response')
+        this.banners = []
+        this.currentMovie = null
+      }
+    },
+
+    setCurrentMovie(index) {
+      this.currentIndex = index
+      this.currentMovie = this.banners[index]
+    },
+
+    handlePlay(slug) {
+      this.$router.push({ path: `/movie/play/${slug}` })
+    },
+
+    handleFavorite() {
+      console.log('Added to favorites:', this.currentMovie?.title)
+    },
+    handleInfo(slug) {
+      this.$router.push({ path: `/movie/${slug}` })
+    },
   },
-  // Add more movies as needed
-])
-
-const currentIndex = ref(0)
-const currentMovie = ref(movies.value[0])
-
-const setCurrentMovie = (index: number) => {
-  currentIndex.value = index
-  currentMovie.value = movies.value[index]
-}
-
-const handlePlay = () => {
-  // Implement play functionality
-  console.log('Playing:', currentMovie.value.title)
-}
-
-const handleFavorite = () => {
-  // Implement favorite functionality
-  console.log('Added to favorites:', currentMovie.value.title)
-}
-
-const handleInfo = () => {
-  // Implement info functionality
-  console.log('Showing info for:', currentMovie.value.title)
 }
 </script>
-
 <style scoped>
 .banner {
   position: relative;
@@ -294,10 +256,15 @@ const handleInfo = () => {
 
 .description {
   font-size: 1rem;
-  line-height: 1.6;
-  margin-bottom: 2rem;
+  line-height: 1.2;
+  margin-bottom: 1rem;
   opacity: 0.9;
   max-width: 600px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 .controls {
@@ -468,7 +435,7 @@ const handleInfo = () => {
   left: 0;
   right: 0;
   padding: 2rem 3rem 1rem 2.5rem;
-  background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 1));
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
 }
 @media (max-width: 1024px) {
   .content-wrapper {

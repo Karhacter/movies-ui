@@ -33,14 +33,13 @@
               >
             </li>
             <li>
-              <router-link class="dropdown-item" to="/watchlist"
-                ><i class="fa-solid fa-film"></i>&nbsp;&nbsp;&nbsp;Tủ Phim</router-link
+              <a class="dropdown-item" href="/tu-phim"
+                ><i class="fa-solid fa-film"></i>&nbsp;&nbsp;&nbsp;Tủ Phim</a
               >
             </li>
             <li>
-              <router-link class="dropdown-item" href="#"
-                ><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;Lịch
-                Sử</router-link
+              <a class="dropdown-item" href="/lich-su-xem"
+                ><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;Lịch Sử</a
               >
             </li>
             <li><hr class="dropdown-divider" /></li>

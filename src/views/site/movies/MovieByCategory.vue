@@ -33,7 +33,7 @@
       </div>
 
       <!-- Section Left (20%) -->
-      <MovieSidebar :top-movies="topMovies" />
+      <MovieSidebar />
     </div>
   </div>
 </template>
@@ -44,7 +44,6 @@ import { useRoute, useRouter } from 'vue-router'
 import MovieCard from '@/components/movies/MovieCard.vue'
 import MoviePagination from '@/components/movies/MoviePagination.vue'
 import MovieSidebar from '@/components/movies/MovieSidebar.vue'
-import MovieSearch from '@/components/movies/MovieSearch.vue'
 import { $http } from '@/plugins/http-wrapper'
 
 export default defineComponent({
@@ -53,19 +52,14 @@ export default defineComponent({
     MovieCard,
     MoviePagination,
     MovieSidebar,
-    MovieSearch,
   },
   data() {
     return {
       movies: [],
-      topMovies: [],
       loading: false,
       currentPage: 0,
       totalPages: 0,
       pageSize: 10,
-      sortBy: 'rating',
-      sortOrder: 'desc',
-      searchQuery: '',
       pageCache: new Map(),
       pageChangeTimeout: null,
     }
