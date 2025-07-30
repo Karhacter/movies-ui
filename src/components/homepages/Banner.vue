@@ -87,7 +87,7 @@ export default {
   },
   methods: {
     getImage(imageName) {
-      return `http://localhost:8080${imageName}`
+      return `${process.env.VITE_API_URL}${imageName}`
     },
     async FetchBanner() {
       const response = await $http.get('/movies/top-new', { limit: 5 })
@@ -108,7 +108,7 @@ export default {
     },
 
     handlePlay(slug) {
-      this.$router.push({ path: `/movie/play/${slug}` })
+      this.$router.push({ path: `/movie/play/${slug}/ep-1` })
     },
 
     handleFavorite() {

@@ -68,7 +68,7 @@ export default {
   },
   methods: {
     getImage(imageName) {
-      return `http://localhost:8080${imageName}`
+      return `${process.env.VITE_API_URL}${imageName}`
     },
   },
 }

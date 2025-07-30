@@ -41,7 +41,7 @@ export default {
   methods: {
     getImage(imageName) {
       if (!imageName) return ''
-      return `http://localhost:8080${imageName.startsWith('/') ? '' : '/'}${imageName}`
+      return `${process.env.VITE_API_URL}${imageName.startsWith('/') ? '' : '/'}${imageName}`
     },
   },
   setup() {

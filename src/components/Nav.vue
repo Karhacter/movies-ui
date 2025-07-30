@@ -55,7 +55,7 @@ export default {
     Vcate,
   },
   mounted() {
-    fetch('http://localhost:8080/api/menus/index')
+    fetch(`${process.env.VITE_API_URL}/api/menus/index`)
       .then((response) => response.json())
       .then((data) => {
         this.menus = data

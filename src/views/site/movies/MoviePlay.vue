@@ -1,9 +1,6 @@
 <template>
   <div class="video-container pt-5 mt-5">
-    <video ref="videoPlayer" class="video" controls>
-      <source v-if="!isHls" :src="videoSrc" type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
+  <video ref="videoPlayer" class="video" controls></video>
 
     <div class="extra-controls">
       <button class="btn btn-no-ads"><i class="fa fa-ban" aria-hidden="true"></i> Ads</button>

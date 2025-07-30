@@ -94,7 +94,7 @@ export default {
         try {
           const userInfo = await $http.get('/auth/userinfo')
           if (userInfo && userInfo.avatar) {
-            this.userAvatar = `http://localhost:8080${userInfo.avatar}`
+            this.userAvatar = `${process.env.VITE_API_URL}${userInfo.avatar}`
           } else {
             this.userAvatar = '/src/assets/avatar.png'
           }

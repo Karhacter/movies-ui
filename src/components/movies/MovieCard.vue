@@ -20,6 +20,8 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 interface Movie {
   id: number
   title: string
@@ -36,7 +38,7 @@ defineProps<{
 const router = useRouter()
 
 function getMovieImage(imageName: string): string {
-  return `http://localhost:8080${imageName}`
+  return `${apiUrl}${imageName}`;
 }
 </script>
 
