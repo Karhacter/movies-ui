@@ -50,7 +50,7 @@ export default {
   data() {
     return {
       menus: [],
-      baseUrl: import.meta.env.VITE_API_URL,
+      baseUrl: import.meta.env.VITE_APP_URL,
     }
   },
   components: {
