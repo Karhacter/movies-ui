@@ -55,11 +55,17 @@ export default {
     Vcate,
   },
   mounted() {
-    fetch(`${process.env.VITE_API_URL}/api/menus/index`)
-      .then((response) => response.json())
-      .then((data) => {
-        this.menus = data
-      })
+    this.fetchMenu();
+  },
+  methods: {
+    async fetchMenu() {
+      try {
+        const res = await $http.get('/menus/index')
+        this.menus = res
+      } catch (error) {
+        console.error('Error fetching Menus:', error)
+      }
+    },
   },
 }
 </script>
