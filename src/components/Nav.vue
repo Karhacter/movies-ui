@@ -44,6 +44,7 @@
 
 <script>
 import Vcate from '@/components/Category.vue'
+import { $http } from '@/plugins/http-wrapper';
 
 export default {
   data() {
