@@ -15,7 +15,7 @@
         <li class="nav-item" v-for="(menu, index) in menus" :key="index">
           <a
             class="nav-link"
-           :href="import.meta.env.VITE_API_URL + menu.link"
+           :href="baseUrl + menu.link"
             v-if="menu.position == 'headermenu'"
           >
             {{ menu.name }}
@@ -50,6 +50,7 @@ export default {
   data() {
     return {
       menus: [],
+      baseUrl: import.meta.env.VITE_API_URL,
     }
   },
   components: {
