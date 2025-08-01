@@ -89,7 +89,7 @@ async function fetchComments() {
     return
   }
   try {
-    const response = await axios.get('http://localhost:8080/api/comments/list', {
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/comments/list`, {
       params: { movieTitle: movieTitle.value },
     })
     comments.value = response.data

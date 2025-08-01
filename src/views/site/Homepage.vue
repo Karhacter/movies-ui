@@ -1,18 +1,20 @@
 <template>
   <div class="homepage">
-    <!-- Banner -->
     <div>
       <Banner />
     </div>
-    <!-- end -->
+
     <CategoriesDisplay />
     <div class="MovieListTop">
       <Recommend />
     </div>
-    <PremiumPlans />
+
     <hr />
     <hr />
-    <section class="main-content"></section>
+
+    <section class="main-content">
+      <PremiumPlans />
+    </section>
   </div>
 </template>
 

@@ -25,7 +25,7 @@
   </div>
 </template>
 
-<script>
+<script >
 import { $http } from '@/plugins/http-wrapper'
 
 export default {

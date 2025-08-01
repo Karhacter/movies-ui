@@ -3,9 +3,9 @@
     <div class="movie-image-container">
       <img :src="getMovieImage(movie.image)" class="card-img-top" :alt="movie.image" />
       <div class="play-button-overlay">
-        <router-link class="play-button" :to="`/movie/${movie.slug}`">
+        <RouterLink class="play-button" :to="`/movie/${movie.slug}`">
           <i class="fas fa-play"></i>
-        </router-link>
+        </RouterLink>
       </div>
     </div>
     <div class="card-body">
@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 
 const apiUrl = import.meta.env.VITE_API_URL;
 

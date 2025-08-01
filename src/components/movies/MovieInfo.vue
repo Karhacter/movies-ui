@@ -128,7 +128,7 @@ export default {
     },
     // url to get images
     getImage(imageName) {
-      return `${process.env.VITE_API_URL}${imageName}`
+return `${import.meta.env.VITE_API_URL}${imageName}`
     },
 
     // action to check that movie is in watchlist ?

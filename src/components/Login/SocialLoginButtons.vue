@@ -39,7 +39,7 @@ export default {
       error.value = null
       try {
         const data = await $http.get('/oauth/login')
-        const backendBaseUrl = `${process.env.VITE_API_URL}`
+        const backendBaseUrl = `${import.meta.env.VITE_API_URL}`
         // Prepend backend base URL if the URL is relative
         if (data.google && !data.google.startsWith('http')) {
           data.google = backendBaseUrl + data.google

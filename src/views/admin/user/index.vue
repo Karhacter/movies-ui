@@ -112,7 +112,7 @@ export default {
   methods: {
     getImage(imageName) {
       if (!imageName) return ''
-      return `${process.env.VITE_API_URL}${imageName.startsWith('/') ? '' : '/'}${imageName}`
+      return `${import.meta.env.VITE_API_URL}${imageName.startsWith('/') ? '' : '/'}${imageName}`
     },
     async fetchUser(page = 0) {
       if (this.loading) return

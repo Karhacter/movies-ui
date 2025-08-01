@@ -84,7 +84,7 @@ export default {
     },
     // action get image
     getImage(imageName) {
-      return `${process.env.VITE_API_URL}${imageName}`
+return `${import.meta.env.VITE_API_URL}${imageName}`
     },
     async fetchUserInfor() {
       try {

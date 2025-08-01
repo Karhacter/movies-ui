@@ -370,7 +370,7 @@ const showGalleryInput = ref(false)
 
 function getImage(imageName) {
   if (!imageName) return ''
-  return `${process.env.VITE_API_URL}${imageName.startsWith('/') ? '' : '/'}${imageName}`
+  return `${import.meta.env.VITE_API_URL}${imageName.startsWith('/') ? '' : '/'}${imageName}`
 }
 </script>
 
